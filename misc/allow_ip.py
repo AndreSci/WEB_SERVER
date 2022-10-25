@@ -60,8 +60,8 @@ class AllowedIP:
                 try:
                     with open('allowed_ip.ini', 'w') as configfile:
                         self.file.write(configfile)
-                    logger.add_log(f"SUCCESS\tIP - {new_ip} добавлен в систему со значением {allow_ip} ")
                     ret_value = True
+                    logger.add_log(f"SUCCESS\tIP - {new_ip} добавлен в систему со значением {allow_ip} ")
                 except Exception as ex:
                     logger.add_log(f"ERROR\tОшибка открытия или записи в файл - {ex}")
 

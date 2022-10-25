@@ -10,8 +10,6 @@ def test_set():
 
     if result["result"]:
         return True
-    else:
-        return False
 
 
 def test_ip():
@@ -30,3 +28,4 @@ def test_ip():
     assert(allow_ip.find_ip("192.168.48.5", log) == False)  # False
     assert(allow_ip.find_ip("192.168.48.6", log) == False)  # False
     assert(allow_ip.find_ip("192.168.48.7", log) == False)  # False
+    assert(allow_ip.find_ip("192.168.48.8", log) == False)  # False

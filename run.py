@@ -1,6 +1,7 @@
 from misc.util import SettingsIni
 from misc.allow_ip import AllowedIP
 from misc.logger import Logger
+from flask_server import web_flask
 
 
 def main():
@@ -15,9 +16,7 @@ def main():
         print(result["desc"])
         return
 
-    allow_ip = AllowedIP()
-
-    allow_ip.read_file(logger)
+    web_flask(logger, settings)
 
 
 if __name__ == '__main__':
