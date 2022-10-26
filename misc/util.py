@@ -1,5 +1,8 @@
 import os
 import configparser
+from flask import Flask
+
+app = Flask(__name__)  # Обьявления сервера
 
 
 class SettingsIni:
@@ -19,10 +22,13 @@ class SettingsIni:
         if os.path.isfile("settings.ini"):
             try:
                 self.settings_file.read("settings.ini", encoding="utf-8")
-                # general settings --------------------------------------------------------
+                # general settings ----------------------------------------
                 self.settings_ini["host"] = self.settings_file["GEN"]["HOST"]
                 self.settings_ini["port"] = self.settings_file["GEN"]["PORT"]
                 self.settings_ini["log_path"] = self.settings_file["GEN"]["LOG_PATH"]
+                # sms settings---------------------------------------------
+                self.settings_ini["sms_host"] = self.settings_file["SMS"]["HOST"]
+                self.settings_ini["sms_port"] = self.settings_file["SMS"]["PORT"]
 
                 ret_value["result"] = True
 

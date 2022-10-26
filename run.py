@@ -1,5 +1,4 @@
 from misc.util import SettingsIni
-from misc.allow_ip import AllowedIP
 from misc.logger import Logger
 from flask_server import web_flask
 

@@ -36,7 +36,6 @@ class AllowedIP:
         ret_value = False
 
         if user_ip in self.allow_ip:
-
             if self.allow_ip[user_ip] == '1':
                 ret_value = True
 
