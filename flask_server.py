@@ -52,29 +52,27 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_data)
 
-    @app.route('/add_ip/', methods=['GET', 'POST'])
+    @app.route('/DoAddIp', methods=['POST'])
     def add_ip():
-        json_replay = {"RESULT": "NOT_ALLOWED", "DESC": "None", "DATA": "None"}
+        # json_replay = {"RESULT": "NOT_ALLOWED", "DESC": "None", "DATA": "None"}
+
         user_ip = request.remote_addr
 
-        if allow_ip.find_ip(user_ip, logger):
-            json_replay["RESULT"] = "ALLOWED"
+        if not allow_ip.find_ip(user_ip, logger, '2'):
+            return "ERROR"
+        else:
+            json_request = request.json
 
-        # if request.method == "POST":
-        #
-        #     phone_num = request.form.get('fphone')
-        #     text = request.form.get('ftext')
-        #
-        #     # Если запрос произведен с параметрами в ссылке
-        #     if not phone_num:
-        #         phone_num = request.args.get('fphone')
-        #         text = request.args.get('ftext')
+            new_ip = json_request.get("ip")
+            activity = json_request.get("activity")
 
-        return json_replay, 200
+            allow_ip.add_ip(new_ip, logger, activity)
+
+            return f"IP добавлен с доступом {activity}", 200
 
     # MAIN FUNCTION ------------------------------------------
 
-    @app.route('/DoGetEmployee/', methods=['GET'])
+    @app.route('/DoGetEmployee', methods=['GET'])
     def get_employee():
 
         # Запрос в БД
@@ -83,15 +81,15 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_data)
 
-    @app.route('/DoNewEmployee/', methods=['POST'])
+    @app.route('/DoNewEmployee', methods=['POST'])
     def new_employee():
 
         res = request.json
 
         return "hello new_employee"
 
-    @app.route('/DoCreateGuest', methods=['POST'])
-    def on_pass():
+    @app.route('/DoCreateGuest.txt', methods=['POST'])
+    def create_guest():
 
         user_ip = request.remote_addr
 
@@ -99,17 +97,16 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             return "ERROR"
         else:
             json_request = request.json
-
             # Результат из БД
             db_result = CreateGuestDB.add_guest(json_request, logger)
 
-            if json_request["FPhone"] and db_result["status"]:
+            if json_request.get("FPhone") and db_result["status"]:
                 sms = SendSMS(set_ini)
                 sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
 
             return "SUCCESS"
 
-    @app.route('/DoDeleteEmployee/', methods=['POST'])
+    @app.route('/DoDeleteEmployee', methods=['POST'])
     def delete_employee():
         res = request.json
 

@@ -22,6 +22,8 @@ class AllowedIP:
                     # Загружаем данные из динамичного файла allowed_ip.ini
                     self.file.read("allowed_ip.ini", encoding="utf-8")
 
+                    self.allow_ip = dict()  # Обнуляем словарь доступа
+
                     for key, val in self.file["CONNECTIONS"].items():
                         self.allow_ip[key] = val
 
@@ -30,37 +32,42 @@ class AllowedIP:
                 except Exception as ex:
                     logger.add_log(f"ERROR\tException - {ex}")
 
-    def find_ip(self, user_ip: str, logger: Logger) -> bool:
+    def find_ip(self, user_ip: str, logger: Logger, activity_lvl='1') -> bool:
         """ Функция поиска IP в словаре, если нет, \n
             вызывает функцию класса add_ip """
         ret_value = False
 
-        if user_ip in self.allow_ip:
-            if self.allow_ip[user_ip] == '1':
-                ret_value = True
+        self.read_file(logger)  # Подгружаем данные из файла
 
+        if user_ip in self.allow_ip:
+            if self.allow_ip[user_ip] == activity_lvl:
+                ret_value = True
         else:
             # Если нет IP добавляем его в файл и словарь класса
             self.add_ip(user_ip, logger)
 
         return ret_value
 
-    def add_ip(self, new_ip: str, logger: Logger, allow_ip='0') -> bool:
+    def add_ip(self, new_ip: str, logger: Logger, activity='0') -> bool:
         """ Функция добавляет IP пользователя в файл со значением str(0)\n
             или если указан как allow_ip='1' """
         ret_value = False
 
+        self.read_file(logger)  # Подгружаем данные из файла
+
         with self.TH_LOCK:  # Блокируем потоки
 
-            self.file["CONNECTIONS"][new_ip] = str(allow_ip)
-            self.allow_ip[new_ip] = str(allow_ip)  # Обязательно должна быть строка
+            self.file["CONNECTIONS"][new_ip] = str(activity)
+            self.allow_ip[new_ip] = str(activity)  # Обязательно должна быть строка
 
             if os.path.isfile("allowed_ip.ini"):
                 try:
                     with open('allowed_ip.ini', 'w') as configfile:
                         self.file.write(configfile)
+
                     ret_value = True
-                    logger.add_log(f"SUCCESS\tIP - {new_ip} добавлен в систему со значением {allow_ip} ")
+
+                    logger.add_log(f"SUCCESS\tIP - {new_ip} добавлен в систему со значением {activity} ")
                 except Exception as ex:
                     logger.add_log(f"ERROR\tОшибка открытия или записи в файл - {ex}")
 

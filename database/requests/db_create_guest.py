@@ -13,13 +13,27 @@ class CreateGuestDB:
         account_id = int(data_on_pass["FAccountID"])
         last_name = data_on_pass['FLastName']
         first_name = data_on_pass['FFirstName']
-        middle_name = data_on_pass['FMiddleName']
-        car_number = data_on_pass['FCarNumber']
+
+        # middle_name = data_on_pass['FMiddleName']
+        middle_name = data_on_pass.get("FMiddleName")
+
+        # car_number = data_on_pass['FCarNumber']
+        car_number = data_on_pass.get("FCarNumber")
+
         date_from = data_on_pass['FDateFrom']
         date_to = data_on_pass['FDateTo']
         invite_code = int(data_on_pass['FInviteCode'])
         remote_id = int(data_on_pass["FRemoteID"])
-        phone_number = data_on_pass["FPhone"]
+
+        # phone_number = data_on_pass["FPhone"]
+        phone_number = data_on_pass.get("FPhone")
+
+        if not middle_name:
+            middle_name = ''
+        if not car_number:
+            car_number = ''
+        if not phone_number:
+            phone_number = ''
 
         ret_value = {"status": False}
 
