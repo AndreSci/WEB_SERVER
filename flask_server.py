@@ -17,15 +17,13 @@ import socket
 
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
-    """ Главная функция создания сервера Фласк.
-        По стандарту сервер фласк будет создаваться на local с портом 8055
-        """
+    """ Главная функция создания сервера Фласк. """
     set_ini = settings_ini.take_settings()
 
     allow_ip = AllowedIP()
     allow_ip.read_file(logger)
 
-    print("Hello I'm WEB_Flask")
+    print("Hello I'm WEB_INTERFACE flask")
     logger.add_log(f"SUCCESS\tweb_flask\t Сервер WEB_Flask начал сво работу")  # log
 
     @app.route('/test_server/', methods=['GET'])
@@ -40,39 +38,27 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_data)
 
-    @app.route('/test_server1/', methods=['GET'])
-    def test_server1():
-        """ Просто функция проверки сервера """
-
-        res = request.json
-
-        json_data = {"f_first_name": "Name", "f_last_name": "Last", "f_middle_name": "Middle", "request": res["12"]}
-
-        logger.add_log(f"SUCCESS\tweb_flask\t server test is OK!")  # log
-
-        return jsonify(json_data)
-
     @app.route('/DoAddIp', methods=['POST'])
     def add_ip():
         # json_replay = {"RESULT": "NOT_ALLOWED", "DESC": "None", "DATA": "None"}
 
         user_ip = request.remote_addr
 
-        if not allow_ip.find_ip(user_ip, logger, '2'):
+        if not allow_ip.find_ip(user_ip, logger, 2):  # Устанавливаем activity_lvl=2 для проверки уровня доступа
             return "ERROR"
         else:
             json_request = request.json
 
             new_ip = json_request.get("ip")
-            activity = json_request.get("activity")
+            activity = int(json_request.get("activity"))
 
             allow_ip.add_ip(new_ip, logger, activity)
 
-            return f"IP добавлен с доступом {activity}", 200
+            return f"IP - {new_ip} добавлен с доступом {activity}", 200
 
     # MAIN FUNCTION ------------------------------------------
 
-    @app.route('/DoGetEmployee', methods=['GET'])
+    @app.route('/DoGetEmployees', methods=['GET'])
     def get_employee():
 
         # Запрос в БД
@@ -88,7 +74,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return "hello new_employee"
 
-    @app.route('/DoCreateGuest.txt', methods=['POST'])
+    @app.route('/DoCreateGuest', methods=['POST'])
     def create_guest():
 
         user_ip = request.remote_addr

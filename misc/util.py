@@ -49,4 +49,3 @@ class SettingsIni:
 
     def take_log_path(self):
         return self.settings_ini["log_path"]
-

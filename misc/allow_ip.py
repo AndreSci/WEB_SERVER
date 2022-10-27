@@ -25,14 +25,14 @@ class AllowedIP:
                     self.allow_ip = dict()  # Обнуляем словарь доступа
 
                     for key, val in self.file["CONNECTIONS"].items():
-                        self.allow_ip[key] = val
+                        self.allow_ip[key] = int(val)
 
                 except KeyError as ex:
                     logger.add_log(f"ERROR\tОшибка по ключу словаря - {ex}")
                 except Exception as ex:
                     logger.add_log(f"ERROR\tException - {ex}")
 
-    def find_ip(self, user_ip: str, logger: Logger, activity_lvl='1') -> bool:
+    def find_ip(self, user_ip: str, logger: Logger, activity_lvl=1) -> bool:
         """ Функция поиска IP в словаре, если нет, \n
             вызывает функцию класса add_ip """
         ret_value = False
@@ -40,7 +40,7 @@ class AllowedIP:
         self.read_file(logger)  # Подгружаем данные из файла
 
         if user_ip in self.allow_ip:
-            if self.allow_ip[user_ip] == activity_lvl:
+            if self.allow_ip[user_ip] >= activity_lvl:
                 ret_value = True
         else:
             # Если нет IP добавляем его в файл и словарь класса
@@ -48,7 +48,7 @@ class AllowedIP:
 
         return ret_value
 
-    def add_ip(self, new_ip: str, logger: Logger, activity='0') -> bool:
+    def add_ip(self, new_ip: str, logger: Logger, activity=0) -> bool:
         """ Функция добавляет IP пользователя в файл со значением str(0)\n
             или если указан как allow_ip='1' """
         ret_value = False
@@ -58,7 +58,7 @@ class AllowedIP:
         with self.TH_LOCK:  # Блокируем потоки
 
             self.file["CONNECTIONS"][new_ip] = str(activity)
-            self.allow_ip[new_ip] = str(activity)  # Обязательно должна быть строка
+            self.allow_ip[new_ip] = activity  # Обязательно должна быть строка
 
             if os.path.isfile("allowed_ip.ini"):
                 try:
