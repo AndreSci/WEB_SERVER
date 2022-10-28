@@ -8,4 +8,6 @@ class SendSMS:
         self.port = set_ini["sms_port"]
 
     def send_sms(self, number, text):
-        requests.post(f"http://{self.host}:{self.port}/send_ic/?fphone={number}&fic={text}")
+        print("отправка смс")
+        res = requests.post(f"http://{self.host}:{self.port}/send_ic/?fphone={str(number)}&fic={text}")
+        print(res)

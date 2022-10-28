@@ -9,7 +9,7 @@ class CreateGuestDB:
     @staticmethod
     def add_guest(data_on_pass: dict, logger: Logger) -> dict:
         """ принимает словарь с данными от on_pass и logger """
-
+        print(data_on_pass)
         account_id = int(data_on_pass["FAccountID"])
         last_name = data_on_pass['FLastName']
         first_name = data_on_pass['FFirstName']
@@ -27,6 +27,8 @@ class CreateGuestDB:
 
         # phone_number = data_on_pass["FPhone"]
         phone_number = data_on_pass.get("FPhone")
+        print(data_on_pass["FPhone"])
+        print(phone_number)
 
         if not middle_name:
             middle_name = ''

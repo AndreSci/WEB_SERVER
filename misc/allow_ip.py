@@ -35,6 +35,7 @@ class AllowedIP:
     def find_ip(self, user_ip: str, logger: Logger, activity_lvl=1) -> bool:
         """ Функция поиска IP в словаре, если нет, \n
             вызывает функцию класса add_ip """
+
         ret_value = False
 
         self.read_file(logger)  # Подгружаем данные из файла
