@@ -29,6 +29,9 @@ class SettingsIni:
                 # sms settings---------------------------------------------
                 self.settings_ini["sms_host"] = self.settings_file["SMS"]["HOST"]
                 self.settings_ini["sms_port"] = self.settings_file["SMS"]["PORT"]
+                # driver
+                self.settings_ini["dr_host"] = self.settings_file["DRIVER"]["HOST"]
+                self.settings_ini["dr_port"] = self.settings_file["DRIVER"]["PORT"]
 
                 ret_value["result"] = True
 

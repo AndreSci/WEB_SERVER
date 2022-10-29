@@ -8,14 +8,7 @@ from misc.send_sms import SendSMS
 
 from database.requests.db_create_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
-
-import asyncio
-import threading
-import time
-import os
-import requests
-import socket
-import fdb
+from database.driver.rest_driver import ConDriver
 
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
@@ -113,7 +106,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             if json_request.get("FPhone") and db_result["status"]:
 
                 sms = SendSMS(set_ini)
-                sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
+                try:
+                    sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
+                except Exception as ex:
+                    logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
 
             if db_result["status"]:
                 json_replay["DESC"] = "Пропуск добавлен в базу."
@@ -128,6 +124,36 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         res = request.json
 
         return "hello delete_employee"
+
+    @app.route('/DoOnPhoto', methods=['POST'])
+    def add_new_photo():
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tadd_new_photo запрос от ip: {user_ip}")
+
+        if not allow_ip.find_ip(user_ip, logger):
+            pass
+        else:
+            try:
+                res_json = request.json
+                # print(res_json)
+                # создаем и подключаемся к драйверу Коли
+
+                connect_driver = ConDriver(set_ini)
+                result = connect_driver.send_photo(res_json, logger)
+            except Exception as ex:
+                result = "ERROR"
+                logger.add_log(f"ERROR\tОшибка чтения Json из запроса {ex}")
+
+            json_replay["RESULT"] = result
+
+            if result == "SUCCESS":
+                json_replay["DESC"] = f"Фотография успешно добавлена."
+            else:
+                json_replay["DESC"] = f"Драйвер ответил ошибкой или нет связи."
+
+        return jsonify(json_replay)
 
     # --------------------------------------------------------
 
