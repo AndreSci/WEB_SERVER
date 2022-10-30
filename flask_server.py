@@ -3,7 +3,6 @@ from flask import Flask, render_template, request, make_response, jsonify
 from misc.util import SettingsIni
 from misc.logger import Logger
 from misc.allow_ip import AllowedIP
-from misc.util import app
 from misc.send_sms import SendSMS
 
 from database.requests.db_create_guest import CreateGuestDB
@@ -13,13 +12,15 @@ from database.driver.rest_driver import ConDriver
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
     """ Главная функция создания сервера Фласк. """
+    app = Flask(__name__)  # Обьявления сервера
+
     set_ini = settings_ini.take_settings()
 
     allow_ip = AllowedIP()
     allow_ip.read_file(logger)
 
     print("Hello I'm WEB_INTERFACE flask")
-    logger.add_log(f"SUCCESS\tweb_flask\t Сервер WEB_Flask начал сво работу")  # log
+    logger.add_log(f"SUCCESS\tweb_flask\t Сервер WEB_Flask начал свою работу")  # log
 
     @app.route('/DoAddIp', methods=['POST'])
     def add_ip():
@@ -29,7 +30,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoAddIp запрос от ip: {user_ip}")
 
         if not allow_ip.find_ip(user_ip, logger, 2):  # Устанавливаем activity_lvl=2 для проверки уровня доступа
-            pass
+
+            json_replay["DESC"] = "Ошибка доступа по IP"
         else:
             json_request = request.json
 
@@ -39,7 +41,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             allow_ip.add_ip(new_ip, logger, activity)
 
             json_replay["RESULT"] = "SUCCESS"
-            json_replay["DESC"] = f"IP - {new_ip} добавлен с доступом {activity}", 200
+            json_replay["DESC"] = f"IP - {new_ip} добавлен с доступом {activity}"
 
         return jsonify(json_replay)
 
@@ -61,6 +63,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             account_id = json_request.get("FAccountID")
             finn = json_request.get("FINN")
 
+            # Запрос в БД sac3
             db_sac3 = CardHoldersDB.get_sac3(account_id, logger)
 
             if db_sac3["status"]:
@@ -82,15 +85,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/DoNewEmployee', methods=['POST'])
     def new_employee():
-
-        res = request.json
-
-        return "hello new_employee"
+        pass
 
     @app.route('/DoCreateGuest', methods=['POST'])
     def create_guest():
 
-        json_replay = {"RESULT": "SUCCESS", "DESC": "None", "DATA": "None"}
+        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
@@ -121,9 +121,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/DoDeleteEmployee', methods=['POST'])
     def delete_employee():
-        res = request.json
-
-        return "hello delete_employee"
+        pass
 
     @app.route('/DoOnPhoto', methods=['POST'])
     def add_new_photo():
@@ -133,25 +131,24 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tadd_new_photo запрос от ip: {user_ip}")
 
         if not allow_ip.find_ip(user_ip, logger):
-            pass
+            json_replay["DESC"] = "Ошибка доступа по IP"
         else:
             try:
                 res_json = request.json
-                # print(res_json)
-                # создаем и подключаемся к драйверу Коли
 
+                # создаем и подключаемся к драйверу Коли
                 connect_driver = ConDriver(set_ini)
                 result = connect_driver.send_photo(res_json, logger)
+
+                if result == "SUCCESS":
+                    json_replay["RESULT"] = "SUCCESS"
+                    json_replay["DESC"] = f"Фотография успешно добавлена."
+                else:
+                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
+
             except Exception as ex:
-                result = "ERROR"
-                logger.add_log(f"ERROR\tОшибка чтения Json из запроса {ex}")
-
-            json_replay["RESULT"] = result
-
-            if result == "SUCCESS":
-                json_replay["DESC"] = f"Фотография успешно добавлена."
-            else:
-                json_replay["DESC"] = f"Драйвер ответил ошибкой или нет связи."
+                json_replay['DESC'] = "Ошибка чтения Json из запроса"
+                logger.add_log(f"ERROR\tИсключение вызвало чтение Json из запроса {ex}")
 
         return jsonify(json_replay)
 

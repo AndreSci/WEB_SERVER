@@ -1,8 +1,5 @@
 import os
 import configparser
-from flask import Flask
-
-app = Flask(__name__)  # Обьявления сервера
 
 
 class SettingsIni:
