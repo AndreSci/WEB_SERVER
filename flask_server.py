@@ -4,6 +4,7 @@ from misc.util import SettingsIni
 from misc.logger import Logger
 from misc.allow_ip import AllowedIP
 from misc.send_sms import SendSMS
+from misc.block_logs import block_flask_logs
 
 from database.requests.db_create_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
@@ -12,7 +13,10 @@ from database.driver.rest_driver import ConDriver
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
     """ Главная функция создания сервера Фласк. """
-    app = Flask(__name__)  # Обьявления сервера
+    app = Flask(__name__)  # Объявление сервера
+
+    # Блокируем сообщения фласк
+    # block_flask_logs()
 
     set_ini = settings_ini.take_settings()
 
@@ -261,11 +265,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             except Exception as ex:
                 json_replay['DESC'] = "Ошибка чтения Json из запроса"
-                logger.add_log(f"ERROR\tDoOnPhoto\tИсключение вызвало чтение Json из запроса {ex}")
+                logger.add_log(f"ERROR\tDoOnPhoto Исключение вызвало чтение Json из запроса {ex}")
 
         return jsonify(json_replay)
 
-    # --------------------------------------------------------
-
-    # ЗАПУСК СЕРВЕРА С ПАРАМЕТРАМИ  <-------------------------
+    # RUN SERVER FLASK  ------
     app.run(debug=False, host=set_ini["host"], port=int(set_ini["port"]))

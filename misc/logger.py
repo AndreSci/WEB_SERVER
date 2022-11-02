@@ -34,12 +34,13 @@ class Logger:
 
         for_file_name = str(today.strftime("%Y-%m-%d"))
 
+        date_time = str(today.strftime("%Y-%m-%d-%H.%M.%S"))
         # Создаем лог
-        mess = str(today.strftime("%Y-%m-%d-%H.%M.%S")) + "\t" + text + "\n"
+        mess = date_time + "\t" + text + "\n"
 
         if test_dir(log_path):
             with self.log_guard:  # Защищаем поток
-                print(mess)
+                print(date_time + "\t" + text)
                 # Открываем и записываем логи в файл отчета.
                 with open(f'{log_path}{for_file_name}.log', 'a', encoding='utf-8') as file:
                     file.write(mess)
