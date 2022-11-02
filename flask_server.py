@@ -48,7 +48,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # MAIN FUNCTION ------------------------------------------
 
     @app.route('/DoGetCardHolders', methods=['GET'])
-    def get_employee():
+    def get_card_holder():
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoGetCardHolders запрос от ip: {user_ip}")
@@ -83,9 +83,92 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoNewEmployee', methods=['POST'])
-    def new_employee():
-        pass
+    @app.route('/DoAddGuest', methods=['POST'])
+    def add_guest():
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoAddGuest запрос от ip: {user_ip}")
+
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = "Ошибка доступа по IP"
+        else:
+            try:
+                res_json = request.json
+
+                # создаем и подключаемся к драйверу Коли
+                connect_driver = ConDriver(set_ini)
+                result = connect_driver.add_person(res_json, logger)
+
+                if result == "SUCCESS":
+                    json_replay["RESULT"] = "SUCCESS"
+                    json_replay["DESC"] = f"Персона успешно добавлена."
+                else:
+                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
+
+            except Exception as ex:
+                json_replay['DESC'] = "Ошибка чтения Json из запроса"
+                logger.add_log(f"ERROR\tDoAddGuest\tИсключение вызвало чтение Json из запроса {ex}")
+
+        return jsonify(json_replay)
+
+    @app.route('/DoAddGuestWithFace', methods=['POST'])
+    def add_guest_with_face():
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoAddGuestWithFace запрос от ip: {user_ip}")
+
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = "Ошибка доступа по IP"
+        else:
+            try:
+                res_json = request.json
+
+                # создаем и подключаемся к драйверу Коли
+                connect_driver = ConDriver(set_ini)
+                result = connect_driver.add_person_with_face(res_json, logger)
+
+                if result == "SUCCESS":
+                    json_replay["RESULT"] = "SUCCESS"
+                    json_replay["DESC"] = f"Персона успешно добавлена."
+                else:
+                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
+
+            except Exception as ex:
+                json_replay['DESC'] = "Ошибка чтения Json из запроса"
+                logger.add_log(f"ERROR\tDoAddGuestWithFace\tИсключение вызвало чтение Json из запроса {ex}")
+
+        return jsonify(json_replay)
+
+    @app.route('/DoUpdateGuest', methods=['POST'])
+    def update_guest():
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoUpdateGuest запрос от ip: {user_ip}")
+
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = "Ошибка доступа по IP"
+        else:
+            try:
+                res_json = request.json
+
+                # создаем и подключаемся к драйверу Коли
+                connect_driver = ConDriver(set_ini)
+                result = connect_driver.update_person(res_json, logger)
+
+                if result == "SUCCESS":
+                    json_replay["RESULT"] = "SUCCESS"
+                    json_replay["DESC"] = f"Персона успешно добавлена."
+                else:
+                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
+
+            except Exception as ex:
+                json_replay['DESC'] = "Ошибка чтения Json из запроса"
+                logger.add_log(f"ERROR\tDoUpdateGuest\tИсключение вызвало чтение Json из запроса {ex}")
+
+        return jsonify(json_replay)
 
     @app.route('/DoCreateGuest', methods=['POST'])
     def create_guest():
@@ -119,16 +202,41 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoDeleteEmployee', methods=['POST'])
-    def delete_employee():
-        pass
+    @app.route('/DoDeleteGuest', methods=['POST'])
+    def delete_guest():
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoDeleteGuest запрос от ip: {user_ip}")
+
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = "Ошибка доступа по IP"
+        else:
+            try:
+                res_json = request.json
+
+                # создаем и подключаемся к драйверу Коли
+                connect_driver = ConDriver(set_ini)
+                result = connect_driver.delete_person(res_json, logger)
+
+                if result == "SUCCESS":
+                    json_replay["RESULT"] = "SUCCESS"
+                    json_replay["DESC"] = f"Персона успешно добавлена."
+                else:
+                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
+
+            except Exception as ex:
+                json_replay['DESC'] = "Ошибка чтения Json из запроса"
+                logger.add_log(f"ERROR\tDoDeleteGuest\tИсключение вызвало чтение Json из запроса {ex}")
+
+        return jsonify(json_replay)
 
     @app.route('/DoOnPhoto', methods=['POST'])
     def add_new_photo():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tadd_new_photo запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoOnPhoto запрос от ip: {user_ip}")
 
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["DESC"] = "Ошибка доступа по IP"
@@ -148,7 +256,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             except Exception as ex:
                 json_replay['DESC'] = "Ошибка чтения Json из запроса"
-                logger.add_log(f"ERROR\tИсключение вызвало чтение Json из запроса {ex}")
+                logger.add_log(f"ERROR\tDoOnPhoto\tИсключение вызвало чтение Json из запроса {ex}")
 
         return jsonify(json_replay)
 

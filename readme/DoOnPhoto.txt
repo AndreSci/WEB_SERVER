@@ -1,4 +1,6 @@
-Вызов - 127.0.0.1:8066/DoOnPhoto
+
+Вызов - http://127.0.0.1:8066/DoOnPhoto
+(POST)
 
 json
 {"id": 11111,

@@ -1,4 +1,6 @@
-127.0.0.1:8066/DoGetCardHolders
+
+http://127.0.0.1:8066/DoGetCardHolders
+(GET)
 
 json
 {

@@ -1,0 +1,18 @@
+
+Вызов - http://127.0.0.1:8066/DoAddGuest
+(POST)
+json данные
+{
+    "id": id
+    "name": name
+
+    Возможные поля
+    "deviceId":      (если нужно применить для одного устройства указываем его Id из базы)
+    "isGuest":       (является ли гостем)
+    "idCardNum":     (номер карты)
+    "qrCode":        (значение qr кода)
+
+}
+
+отвечает json
+{"RESULT": "SUCCESS\ERROR", "DESC": "", "DATA": ""}
