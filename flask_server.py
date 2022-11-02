@@ -22,6 +22,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     print("Hello I'm WEB_INTERFACE flask")
     logger.add_log(f"SUCCESS\tweb_flask\t Сервер WEB_Flask начал свою работу")  # log
 
+    # IP FUNCTION -----
+
     @app.route('/DoAddIp', methods=['POST'])
     def add_ip():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
@@ -45,7 +47,40 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    # MAIN FUNCTION ------------------------------------------
+    # MAIN FUNCTION ------
+
+    @app.route('/DoCreateGuest', methods=['POST'])
+    def create_guest():
+        """ Добавляет посетителя в БД и отправляет смс если номер указан """
+
+        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
+
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["RESULT"] = "ERROR"
+            json_replay["DESC"] = "Ошибка доступа по IP"
+        else:
+            json_request = request.json
+            # Результат из БД
+            db_result = CreateGuestDB.add_guest(json_request, logger)
+
+            if json_request.get("FPhone") and db_result["status"]:
+
+                sms = SendSMS(set_ini)
+                try:
+                    sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
+                except Exception as ex:
+                    logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
+
+            if db_result["status"]:
+                json_replay["DESC"] = "Пропуск добавлен в базу."
+            else:
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = "Ошибка. Не удалось добавить пропуск."
+
+        return jsonify(json_replay)
 
     @app.route('/DoGetCardHolders', methods=['GET'])
     def get_card_holder():
@@ -83,8 +118,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    # DRIVER FUNCTION ------
+
     @app.route('/DoAddGuest', methods=['POST'])
-    def add_guest():
+    def add_guest_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
@@ -113,7 +150,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         return jsonify(json_replay)
 
     @app.route('/DoAddGuestWithFace', methods=['POST'])
-    def add_guest_with_face():
+    def add_guest_with_face_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
@@ -142,7 +179,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         return jsonify(json_replay)
 
     @app.route('/DoUpdateGuest', methods=['POST'])
-    def update_guest():
+    def update_guest_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
@@ -160,7 +197,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
-                    json_replay["DESC"] = f"Персона успешно добавлена."
+                    json_replay["DESC"] = f"Персона успешно обновлена."
                 else:
                     json_replay["DESC"] = f"Драйвер ответил ошибкой."
 
@@ -170,40 +207,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoCreateGuest', methods=['POST'])
-    def create_guest():
-
-        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
-
-        user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
-
-        if not allow_ip.find_ip(user_ip, logger):
-            json_replay["RESULT"] = "ERROR"
-            json_replay["DESC"] = "Ошибка доступа по IP"
-        else:
-            json_request = request.json
-            # Результат из БД
-            db_result = CreateGuestDB.add_guest(json_request, logger)
-
-            if json_request.get("FPhone") and db_result["status"]:
-
-                sms = SendSMS(set_ini)
-                try:
-                    sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
-                except Exception as ex:
-                    logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
-
-            if db_result["status"]:
-                json_replay["DESC"] = "Пропуск добавлен в базу."
-            else:
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = "Ошибка. Не удалось добавить пропуск."
-
-        return jsonify(json_replay)
-
     @app.route('/DoDeleteGuest', methods=['POST'])
-    def delete_guest():
+    def delete_guest_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
@@ -221,7 +226,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
-                    json_replay["DESC"] = f"Персона успешно добавлена."
+                    json_replay["DESC"] = f"Персона успешно удалена."
                 else:
                     json_replay["DESC"] = f"Драйвер ответил ошибкой."
 
@@ -232,7 +237,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         return jsonify(json_replay)
 
     @app.route('/DoOnPhoto', methods=['POST'])
-    def add_new_photo():
+    def add_new_photo_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
@@ -246,7 +251,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 # создаем и подключаемся к драйверу Коли
                 connect_driver = ConDriver(set_ini)
-                result = connect_driver.send_photo(res_json, logger)
+                result = connect_driver.add_face(res_json, logger)
 
                 if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"

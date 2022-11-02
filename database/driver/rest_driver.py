@@ -8,7 +8,7 @@ class ConDriver:
     def __init__(self, set_ini):
         self.settings_ini = set_ini
 
-    def send_photo(self, json_data: json, logger: Logger) -> str:
+    def add_face(self, json_data: json, logger: Logger) -> str:
         ret_value = "ERROR"
         try:
             result = requests.post(f"http://{self.settings_ini['dr_host']}:{self.settings_ini['dr_port']}/addFace",
