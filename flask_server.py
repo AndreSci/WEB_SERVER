@@ -39,15 +39,27 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             json_replay["DESC"] = "Ошибка доступа по IP"
         else:
-            json_request = request.json
+            json_request = dict()
 
-            new_ip = json_request.get("ip")
-            activity = int(json_request.get("activity"))
+            try:  # Обработка случая когда Json пуст или имеет неправильный формат
+                json_request = request.json
+            except Exception as ex:
+                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ex}")
 
-            allow_ip.add_ip(new_ip, logger, activity)
+            if not json_request:
 
-            json_replay["RESULT"] = "SUCCESS"
-            json_replay["DESC"] = f"IP - {new_ip} добавлен с доступом {activity}"
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
+
+            else:
+
+                new_ip = json_request.get("ip")
+                activity = int(json_request.get("activity"))
+
+                allow_ip.add_ip(new_ip, logger, activity)
+
+                json_replay["RESULT"] = "SUCCESS"
+                json_replay["DESC"] = f"IP - {new_ip} добавлен с доступом {activity}"
 
         return jsonify(json_replay)
 
@@ -66,23 +78,36 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = "Ошибка доступа по IP"
         else:
-            json_request = request.json
-            # Результат из БД
-            db_result = CreateGuestDB.add_guest(json_request, logger)
 
-            if json_request.get("FPhone") and db_result["status"]:
+            json_request = dict()
 
-                sms = SendSMS(set_ini)
-                try:
-                    sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
-                except Exception as ex:
-                    logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
+            try:    # Обработка случая когда Json пуст или имеет неправильный формат
+                json_request = request.json
+            except Exception as ex:
+                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ex}")
 
-            if db_result["status"]:
-                json_replay["DESC"] = "Пропуск добавлен в базу."
-            else:
+            if not json_request:
+
                 json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = "Ошибка. Не удалось добавить пропуск."
+                json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
+
+            else:
+                # Результат из БД
+                db_result = CreateGuestDB.add_guest(json_request, logger)
+
+                if json_request.get("FPhone") and db_result["status"]:
+
+                    sms = SendSMS(set_ini)
+                    try:
+                        sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
+                    except Exception as ex:
+                        logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
+
+                if db_result["status"]:
+                    json_replay["DESC"] = "Пропуск добавлен в базу."
+                else:
+                    json_replay["RESULT"] = "ERROR"
+                    json_replay["DESC"] = "Ошибка. Не удалось добавить пропуск."
 
         return jsonify(json_replay)
 
@@ -98,27 +123,40 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = "Ошибка доступа по IP"
         else:
-            json_request = request.json
-            account_id = json_request.get("FAccountID")
-            finn = json_request.get("FINN")
+            json_request = dict()
 
-            # Запрос в БД sac3
-            db_sac3 = CardHoldersDB.get_sac3(account_id, logger)
+            try:  # Обработка случая когда Json пуст или имеет неправильный формат
+                json_request = request.json
+            except Exception as ex:
+                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ex}")
 
-            if db_sac3["status"]:
+            if not json_request:
 
-                # Запрос в БД FIREBIRD
-                db_fdb = CardHoldersDB.get_fdb(finn, logger)
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
 
-                json_replay["DESC"] = db_fdb["desc"]
+            else:
 
-                if db_fdb["status"]:
-                    json_replay["DATA"] = db_fdb["data"]
+                account_id = json_request.get("FAccountID")
+                finn = json_request.get("FINN")
+
+                # Запрос в БД sac3
+                db_sac3 = CardHoldersDB.get_sac3(account_id, logger)
+
+                if db_sac3["status"]:
+
+                    # Запрос в БД FIREBIRD
+                    db_fdb = CardHoldersDB.get_fdb(finn, logger)
+
+                    json_replay["DESC"] = db_fdb["desc"]
+
+                    if db_fdb["status"]:
+                        json_replay["DATA"] = db_fdb["data"]
+                    else:
+                        json_replay["RESULT"] = "ERROR"
                 else:
                     json_replay["RESULT"] = "ERROR"
-            else:
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = db_sac3["desc"]
+                    json_replay["DESC"] = db_sac3["desc"]
 
         return jsonify(json_replay)
 

@@ -10,6 +10,8 @@ class CreateGuestDB:
     def add_guest(data_on_pass: dict, logger: Logger) -> dict:
         """ принимает словарь с данными от on_pass и logger """
 
+        print(data_on_pass)
+
         account_id = int(data_on_pass["FAccountID"])
         last_name = data_on_pass['FLastName']
         first_name = data_on_pass['FFirstName']
