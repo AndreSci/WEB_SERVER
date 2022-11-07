@@ -1,0 +1,27 @@
+
+http://127.0.0.1:8066/DoGetCardHolders
+(GET)
+
+data args (параметры в запросе)
+127.0.0.1:8066/DoGetCardHolders?FAccountID=000000&FINN=11111111111
+
+или
+
+json
+{
+    "FAccountID": 00000,
+    "FINN": "строка"
+}
+
+отвечает json
+{"RESULT": "SUCCESS\ERROR", "DESC": "", "DATA": ""}
+
+"DATA" при успешном поиске возвращает список словарей
+
+пример:
+        {
+            "ffirstname": "ИМЯ",
+            "fid": "1686",
+            "flastname": "ФАМИЛИЯ",
+            "fmiddlename": "ОТЧЕСТВО"
+        }
