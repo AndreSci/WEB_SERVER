@@ -63,8 +63,7 @@ class CreateGuestDB:
 
                 if len(request_activity) == 0:
                     ret_value["status"] = "ACCESS_DENIED"
-                    ret_value["desc"] = "отказ в регистрации " \
-                                        "(на этапе проверки учетная запись компании или пользователя не активна)"
+                    ret_value["desc"] = "registration_denial"
 
                 elif len(is_blocked) != 0:
                     ret_value["status"] = "IS_BLOCKED"
@@ -99,12 +98,12 @@ class CreateGuestDB:
                     logger.add_log(f"CreateGuestDB.add_guest - "
                                    f"\tSUCCESS\tУспешно добавлен GUEST в базу данных {account_id}")
                     ret_value["status"] = "SUCCESS"
-                    ret_value["desc"] = "Пропуск добавлен в базу."
+                    ret_value["desc"] = "guest_added"
 
             connection.close()
 
         except Exception as ex:
             logger.add_log(f"CreateGuestDB.add_guest - \tERROR\tОшибка работы с базой данных: {ex}")
-            ret_value["desc"] = "Ошибка. Не удалось добавить пропуск."
+            ret_value["desc"] = "any_error"
 
         return ret_value

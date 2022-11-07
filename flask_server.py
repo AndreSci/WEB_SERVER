@@ -78,7 +78,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["RESULT"] = "ERROR"
-            json_replay["DESC"] = "Ошибка доступа по IP"
+            json_replay["DESC"] = "Access error IP"
         else:
 
             json_request = dict()
@@ -91,7 +91,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             if not json_request:
 
                 json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
+                json_replay["DESC"] = "Error read Json from request."
 
             else:
                 # Результат из БД

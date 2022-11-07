@@ -2,6 +2,9 @@ from misc.util import SettingsIni
 from misc.logger import Logger
 from flask_server import web_flask
 import time
+import ctypes
+
+ctypes.windll.kernel32.SetConsoleTitleW("REST API interface")
 
 
 def main():
@@ -10,6 +13,9 @@ def main():
     settings = SettingsIni()
     result = settings.create_settings()
 
+    port = settings.settings_ini["port"]
+
+    ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {port}")
     # Обьявляем логирование
     logger = Logger(settings)
 
