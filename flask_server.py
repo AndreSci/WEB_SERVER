@@ -15,6 +15,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     """ Главная функция создания сервера Фласк. """
     app = Flask(__name__)  # Объявление сервера
 
+    app.config['JSON_AS_ASCII'] = False
+
     # Блокируем сообщения фласк
     # block_flask_logs()
 
@@ -126,12 +128,20 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_request = dict()
 
             try:  # Обработка случая когда Json пуст или имеет неправильный формат
-                json_request = request.json
+
+                json_request['FAccountID'] = request.args.get("FAccountID")
+                json_request['FINN'] = request.args.get("FINN")
             except Exception as ex:
-                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ex}")
+                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения args data: {ex}, "
+                               f"Попытка чтения данных из Json.")
+
+                try:
+                    json_request = request.json
+                except KeyError as ke:
+                    logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ke}")
+                    json_request = {}
 
             if not json_request:
-
                 json_replay["RESULT"] = "ERROR"
                 json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
 

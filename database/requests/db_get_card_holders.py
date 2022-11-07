@@ -60,8 +60,13 @@ class CardHoldersDB:
             res_size = len(res)
 
             if res_size:
+
+                ret_res = list()
+                for it in res:
+                    ret_res.append({"fid": str(it[0]), "flastname": it[1], "ffirstname": it[2], "fmiddlename": it[3]})
+
                 ret_value["status"] = True
-                ret_value["data"] = res
+                ret_value["data"] = ret_res
                 ret_value["desc"] = "Успешно"
             else:
                 ret_value["desc"] = "Не удалось найти информацию CardHoldersDB.get_fdb"

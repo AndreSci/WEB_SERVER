@@ -1,5 +1,3 @@
-import datetime
-
 from misc.logger import Logger
 from database.db_connection import connect_db
 
@@ -9,8 +7,6 @@ class CreateGuestDB:
     @staticmethod
     def add_guest(data_on_pass: dict, logger: Logger) -> dict:
         """ принимает словарь с данными от on_pass и logger """
-
-        print(data_on_pass)
 
         account_id = int(data_on_pass["FAccountID"])
         last_name = data_on_pass['FLastName']
