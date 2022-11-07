@@ -48,6 +48,7 @@ class CreateGuestDB:
                                 f"and taccount.FActivity = 1")
                 request_activity = cur.fetchall()
 
+                # tblocked
                 is_blocked = list()  # TODO проверять номер машины на блокировку, данного поля в базе пока что нет.
 
                 if len(request_activity) == 0:
