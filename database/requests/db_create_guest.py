@@ -55,9 +55,9 @@ class CreateGuestDB:
                     ret_value["status"] = "ACCESS_DENIED"
                     ret_value["desc"] = "отказ в регистрации " \
                                         "(на этапе проверки учетная запись компании или пользователя не активна)"
-                if len(is_blocked) == 0:
+                if len(is_blocked) != 0:
                     ret_value["status"] = "IS_BLOCKED"
-                    ret_value["desc"] = "номер авто заблокирован"
+                    ret_value["desc"] = "Номер авто заблокирован"
                 else:
                     # Загружаем данные в базу
                     cur.execute(f"insert into sac3.tguest("
