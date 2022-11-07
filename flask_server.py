@@ -97,7 +97,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 # Результат из БД
                 db_result = CreateGuestDB.add_guest(json_request, logger)
 
-                if json_request.get("FPhone") and db_result["status"]:
+                if json_request.get("FPhone") and db_result["status"] == 'SUCCESS':
 
                     sms = SendSMS(set_ini)
                     try:
@@ -105,11 +105,20 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     except Exception as ex:
                         logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
 
-                if db_result["status"]:
-                    json_replay["DESC"] = "Пропуск добавлен в базу."
+                if db_result["status"] == "SUCCESS":
+                    json_replay["DESC"] = db_result["desc"]
+
+                elif db_result["status"] == "ACCESS_DENIED":
+                    json_replay["RESULT"] = "ACCESS_DENIED"
+                    json_replay["DESC"] = db_result["desc"]
+
+                elif db_result["status"] == "IS_BLOCKED":
+                    json_replay["RESULT"] = "IS_BLOCKED"
+                    json_replay["DESC"] = db_result["desc"]
+
                 else:
                     json_replay["RESULT"] = "ERROR"
-                    json_replay["DESC"] = "Ошибка. Не удалось добавить пропуск."
+                    json_replay["DESC"] = db_result["desc"]
 
         return jsonify(json_replay)
 

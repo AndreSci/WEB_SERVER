@@ -33,7 +33,7 @@ class CreateGuestDB:
         if not phone_number:
             phone_number = ''
 
-        ret_value = {"status": False}
+        ret_value = {"status": "ERROR"}
 
         try:
             # Создаем подключение
@@ -48,27 +48,38 @@ class CreateGuestDB:
                                 f"and taccount.FActivity = 1")
                 request_activity = cur.fetchall()
 
+                is_blocked = list()  # TODO проверять номер машины на блокировку, данного поля в базе пока что нет.
+
                 if len(request_activity) == 0:
-                    return ret_value
+                    ret_value["status"] = "ACCESS_DENIED"
+                    ret_value["desc"] = "отказ в регистрации " \
+                                        "(на этапе проверки учетная запись компании или пользователя не активна)"
+                if len(is_blocked) == 0:
+                    ret_value["status"] = "IS_BLOCKED"
+                    ret_value["desc"] = "номер авто заблокирован"
+                else:
+                    # Загружаем данные в базу
+                    cur.execute(f"insert into sac3.tguest("
+                                    "FLastName, FFirstName, FMiddleName, "
+                                    "FCarNumber, FRemoteID, FActivity, "
+                                    "FDateCreate, FDateFrom, FDateTo, "
+                                    "FAccountID, FPhone, FInviteCode) "
+                                    "values ("
+                                    f"'{last_name}', '{first_name}', '{middle_name}', '{car_number}', "
+                                    f"{remote_id}, '1', now(), "
+                                    f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code})")
 
-                # Загружаем данные в базу
-                cur.execute(f"insert into sac3.tguest("
-                                "FLastName, FFirstName, FMiddleName, "
-                                "FCarNumber, FRemoteID, FActivity, "
-                                "FDateCreate, FDateFrom, FDateTo, "
-                                "FAccountID, FPhone, FInviteCode) "
-                                "values ("
-                                f"'{last_name}', '{first_name}', '{middle_name}', '{car_number}', "
-                                f"{remote_id}, '1', now(), "
-                                f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code})")
+                    connection.commit()
 
-                connection.commit()
+                    logger.add_log(f"CreateGuestDB.add_guest - "
+                                   f"\tSUCCESS\tУспешно добавлен GUEST в базу данных {account_id}")
+                    ret_value["status"] = "SUCCESS"
+                    ret_value["desc"] = "Пропуск добавлен в базу."
 
             connection.close()
-            logger.add_log(f"CreateGuestDB.add_guest - \tSUCCESS\tУспешно добавлен GUEST в базу данных {account_id}")
-            ret_value["status"] = True
 
         except Exception as ex:
             logger.add_log(f"CreateGuestDB.add_guest - \tERROR\tОшибка работы с базой данных: {ex}")
+            ret_value["desc"] = "Ошибка. Не удалось добавить пропуск."
 
         return ret_value
