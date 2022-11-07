@@ -105,20 +105,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     except Exception as ex:
                         logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
 
-                if db_result["status"] == "SUCCESS":
-                    json_replay["DESC"] = db_result["desc"]
-
-                elif db_result["status"] == "ACCESS_DENIED":
-                    json_replay["RESULT"] = "ACCESS_DENIED"
-                    json_replay["DESC"] = db_result["desc"]
-
-                elif db_result["status"] == "IS_BLOCKED":
-                    json_replay["RESULT"] = "IS_BLOCKED"
-                    json_replay["DESC"] = db_result["desc"]
-
-                else:
-                    json_replay["RESULT"] = "ERROR"
-                    json_replay["DESC"] = db_result["desc"]
+                json_replay["RESULT"] = db_result["status"]
+                json_replay["DESC"] = db_result["desc"]
+                json_replay["DATA"] = db_result["data"]
 
         return jsonify(json_replay)
 

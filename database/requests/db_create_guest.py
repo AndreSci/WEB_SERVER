@@ -33,7 +33,7 @@ class CreateGuestDB:
         if not phone_number:
             phone_number = ''
 
-        ret_value = {"status": "ERROR"}
+        ret_value = {"status": "ERROR", "desc": '', "data": ''}
 
         try:
             # Создаем подключение
@@ -48,16 +48,32 @@ class CreateGuestDB:
                                 f"and taccount.FActivity = 1")
                 request_activity = cur.fetchall()
 
-                # tblocked
-                is_blocked = list()  # TODO проверять номер машины на блокировку, данного поля в базе пока что нет.
+                # TODO проверять номер машины на правильность написания (исключать пробелы и англ. буквы)
+
+                cur.execute(f"select FID "
+                            f"from sac3.tblacklist "
+                            f"where FCarNumber = '{car_number}' "
+                            f"and FActivity = 1")
+                is_blocked = cur.fetchall()
+
+                cur.execute(f"select FID "
+                            f"from sac3.tguest "
+                            f"where FRemoteID = {remote_id}")
+                is_exist = cur.fetchall()
 
                 if len(request_activity) == 0:
                     ret_value["status"] = "ACCESS_DENIED"
                     ret_value["desc"] = "отказ в регистрации " \
                                         "(на этапе проверки учетная запись компании или пользователя не активна)"
-                if len(is_blocked) != 0:
+
+                elif len(is_blocked) != 0:
                     ret_value["status"] = "IS_BLOCKED"
-                    ret_value["desc"] = "Номер авто заблокирован"
+                    ret_value["desc"] = "car_is_blocked"
+
+                elif len(is_exist) != 0:
+                    ret_value["status"] = "WARNING"
+                    ret_value["desc"] = "is_exist"
+
                 else:
                     # Загружаем данные в базу
                     cur.execute(f"insert into sac3.tguest("
@@ -71,6 +87,14 @@ class CreateGuestDB:
                                     f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code})")
 
                     connection.commit()
+
+                    # Получаем FID для ответа
+                    cur.execute(f"select FID "
+                                f"from sac3.tguest "
+                                f"where FRemoteID = {remote_id}")
+                    is_exist = cur.fetchall()
+
+                    ret_value["data"] = is_exist[0]
 
                     logger.add_log(f"CreateGuestDB.add_guest - "
                                    f"\tSUCCESS\tУспешно добавлен GUEST в базу данных {account_id}")
