@@ -88,7 +88,7 @@ class CreateGuestDB:
                     ret_value["status"] = "ACCESS_DENIED"
                     ret_value["desc"] = "registration_denial"
 
-                    logger.add_log(f"CreateGuestDB.add_guest - \tACCESS_DENIED\t"
+                    logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\t"
                                    f"Регистрация заявки отклонена AccountID: {account_id}.")
 
                 elif len(is_exist) != 0:
@@ -108,7 +108,7 @@ class CreateGuestDB:
                     cur.execute(sql_request)
 
                     connection.commit()
-                    logger.add_log(f"CreateGuestDB.add_guest - \tIS_BLOCKED\tНомер {car_number} в черном списке.")
+                    logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\tНомер {car_number} в черном списке.")
                 else:
                     # Загружаем данные в базу
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,

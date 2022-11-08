@@ -4,6 +4,7 @@ from misc.util import SettingsIni
 from misc.logger import Logger
 from misc.allow_ip import AllowedIP
 from misc.send_sms import SendSMS
+from misc.car_number_test import NormalizeCar
 from misc.block_logs import block_flask_logs
 
 from database.requests.db_create_guest import CreateGuestDB
@@ -94,6 +95,16 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 json_replay["DESC"] = "Error read Json from request."
 
             else:
+
+                # Проверяем номер авто
+                car_number = json_request.get("FCarNumber")
+
+                if car_number:
+                    norm_num = NormalizeCar()
+                    car_number = norm_num.do_normal(car_number)
+
+                    json_request['FCarNumber'] = car_number
+
                 # Результат из БД
                 db_result = CreateGuestDB.add_guest(json_request, logger)
 
@@ -103,6 +114,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     sms = SendSMS(set_ini)
                     try:
                         sms.send_sms(json_request["FPhone"], json_request["FInviteCode"])
+                        logger.add_log(f"EVENT\tОтправлен запрос на отправку СМС: {json_request['FPhone']}")
                     except Exception as ex:
                         logger.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
 

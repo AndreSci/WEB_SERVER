@@ -4,8 +4,6 @@ from flask_server import web_flask
 import time
 import ctypes
 
-ctypes.windll.kernel32.SetConsoleTitleW("REST API interface")
-
 
 def main():
 
@@ -15,7 +13,9 @@ def main():
 
     port = settings.settings_ini["port"]
 
+    # Меняем имя терминала
     ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {port}")
+
     # Обьявляем логирование
     logger = Logger(settings)
 
