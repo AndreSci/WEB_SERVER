@@ -2,6 +2,23 @@ from misc.logger import Logger
 from database.db_connection import connect_db
 
 
+# Создаем строку для запроса в БД
+def do_request_str(last_name, first_name, middle_name, car_number, remote_id, activity,
+                   date_from, date_to, account_id, phone_number, invite_code) -> str:
+
+    req_str = f"insert into sac3.tguest(" \
+                f"FLastName, FFirstName, FMiddleName, " \
+                f"FCarNumber, FRemoteID, FActivity, " \
+                f"FDateCreate, FDateFrom, FDateTo, " \
+                f"FAccountID, FPhone, FInviteCode) " \
+                f"values (" \
+                f"'{last_name}', '{first_name}', '{middle_name}', '{car_number}', " \
+                f"{remote_id}, '{activity}', now(), " \
+                f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code})"
+
+    return req_str
+
+
 class CreateGuestDB:
     # функция отправки данных для таблицы sac3.tguest
     @staticmethod
@@ -41,6 +58,7 @@ class CreateGuestDB:
 
             with connection.cursor() as cur:
 
+                # Проверяем компанию на доступность
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
                                 f"where FCompanyID = tcompany.FID "
                                 f"and taccount.FID = {account_id} "
@@ -50,12 +68,17 @@ class CreateGuestDB:
 
                 # TODO проверять номер машины на правильность написания (исключать пробелы и англ. буквы)
 
-                cur.execute(f"select FID "
-                            f"from sac3.tblacklist "
-                            f"where FCarNumber = '{car_number}' "
-                            f"and FActivity = 1")
-                is_blocked = cur.fetchall()
+                # Если есть номер авто проверяем его в черном списке
+                if car_number:
+                    cur.execute(f"select FID "
+                                f"from sac3.tblacklist "
+                                f"where FCarNumber = '{car_number}' "
+                                f"and FActivity = 1")
+                    is_blocked = cur.fetchall()
+                else:
+                    is_blocked = list()
 
+                # Проверяем ID на существования заявки
                 cur.execute(f"select FID "
                             f"from sac3.tguest "
                             f"where FRemoteID = {remote_id}")
@@ -65,25 +88,28 @@ class CreateGuestDB:
                     ret_value["status"] = "ACCESS_DENIED"
                     ret_value["desc"] = "registration_denial"
 
-                elif len(is_blocked) != 0:
-                    ret_value["status"] = "IS_BLOCKED"
-                    ret_value["desc"] = "car_is_blocked"
-
                 elif len(is_exist) != 0:
                     ret_value["status"] = "WARNING"
                     ret_value["desc"] = "is_exist"
 
+                    ret_value["data"] = is_exist[0]
+
+                elif len(is_blocked) != 0:
+                    ret_value["status"] = "IS_BLOCKED"
+                    ret_value["desc"] = "car_is_blocked"
+
+                    # Загружаем данные в базу
+                    sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 0,
+                                                    date_from, date_to, account_id, phone_number, invite_code)
+                    cur.execute(sql_request)
+
+                    connection.commit()
+
                 else:
                     # Загружаем данные в базу
-                    cur.execute(f"insert into sac3.tguest("
-                                    "FLastName, FFirstName, FMiddleName, "
-                                    "FCarNumber, FRemoteID, FActivity, "
-                                    "FDateCreate, FDateFrom, FDateTo, "
-                                    "FAccountID, FPhone, FInviteCode) "
-                                    "values ("
-                                    f"'{last_name}', '{first_name}', '{middle_name}', '{car_number}', "
-                                    f"{remote_id}, '1', now(), "
-                                    f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code})")
+                    sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
+                                                    date_from, date_to, account_id, phone_number, invite_code)
+                    cur.execute(sql_request)
 
                     connection.commit()
 

@@ -97,6 +97,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 # Результат из БД
                 db_result = CreateGuestDB.add_guest(json_request, logger)
 
+                # отправляем СМС если есть номер телефона в заявке
                 if json_request.get("FPhone") and db_result["status"] == 'SUCCESS':
 
                     sms = SendSMS(set_ini)
