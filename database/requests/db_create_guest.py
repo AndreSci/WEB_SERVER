@@ -88,11 +88,15 @@ class CreateGuestDB:
                     ret_value["status"] = "ACCESS_DENIED"
                     ret_value["desc"] = "registration_denial"
 
+                    logger.add_log(f"CreateGuestDB.add_guest - \tACCESS_DENIED\t"
+                                   f"Регистрация заявки отклонена AccountID: {account_id}.")
+
                 elif len(is_exist) != 0:
                     ret_value["status"] = "WARNING"
                     ret_value["desc"] = "is_exist"
 
                     ret_value["data"] = is_exist[0]
+                    logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\tОшибка RemoteID: {remote_id} уже занят.")
 
                 elif len(is_blocked) != 0:
                     ret_value["status"] = "IS_BLOCKED"
@@ -104,7 +108,7 @@ class CreateGuestDB:
                     cur.execute(sql_request)
 
                     connection.commit()
-
+                    logger.add_log(f"CreateGuestDB.add_guest - \tIS_BLOCKED\tНомер {car_number} в черном списке.")
                 else:
                     # Загружаем данные в базу
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
@@ -122,7 +126,7 @@ class CreateGuestDB:
                     ret_value["data"] = is_exist[0]
 
                     logger.add_log(f"CreateGuestDB.add_guest - "
-                                   f"\tSUCCESS\tУспешно добавлен GUEST в базу данных {account_id}")
+                                   f"\tSUCCESS\tУспешно добавлен GUEST в базу данных Account_ID: {account_id}")
                     ret_value["status"] = "SUCCESS"
                     ret_value["desc"] = "guest_added"
 
