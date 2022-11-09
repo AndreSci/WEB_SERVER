@@ -12,8 +12,8 @@ from database.requests.db_get_card_holders import CardHoldersDB
 from database.driver.rest_driver import ConDriver
 
 
-ERROR_ACCESS_IP = 'Ошибка доступа по IP'
-ERROR_READ_JSON = 'Ошибка чтения Json из запроса'
+ERROR_ACCESS_IP = 'access_block_ip'
+ERROR_READ_JSON = 'error_read_json'
 
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):

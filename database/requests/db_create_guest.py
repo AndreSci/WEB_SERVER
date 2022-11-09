@@ -2,11 +2,11 @@ from misc.logger import Logger
 from database.db_connection import connect_db
 
 
-SUCCESS_GUEST_ADDED = 'Заявка успешно зарегистрирована'
-ERROR_ANY_ERROR = 'Произошла ошибка при регистрации заявки'
-ACCESS_DENIED_REGISTRATION_DENIAL = 'Отказ в регистрации, аккаунт заблокирован'
-IS_BLOCKED_CAR_IS_BLOCKED = 'Отказ в регистрации, номер авто в черном списке'
-WARNING_IS_EXIST = 'Заявка уже была создана'
+SUCCESS_GUEST_ADDED = 'guest_added'
+ERROR_ANY_ERROR = 'any_error'
+ACCESS_DENIED_REGISTRATION_DENIAL = 'registration_denial'
+IS_BLOCKED_CAR_IS_BLOCKED = 'car_is_blocked'
+WARNING_IS_EXIST = 'is_exist'
 
 
 # Создаем строку для запроса в БД
