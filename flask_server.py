@@ -12,6 +12,10 @@ from database.requests.db_get_card_holders import CardHoldersDB
 from database.driver.rest_driver import ConDriver
 
 
+ERROR_ACCESS_IP = 'Ошибка доступа по IP'
+ERROR_READ_JSON = 'Ошибка чтения Json из запроса'
+
+
 def web_flask(logger: Logger, settings_ini: SettingsIni):
     """ Главная функция создания сервера Фласк. """
     app = Flask(__name__)  # Объявление сервера
@@ -79,7 +83,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["RESULT"] = "ERROR"
-            json_replay["DESC"] = "Access error IP"
+            json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
             json_request = dict()
@@ -92,7 +96,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             if not json_request:
 
                 json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = "Error read Json from request."
+                json_replay["DESC"] = ERROR_READ_JSON
 
             else:
 

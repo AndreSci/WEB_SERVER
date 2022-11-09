@@ -19,8 +19,8 @@ json данные
 отвечает json
 {"RESULT": "", "DESC": "", "DATA": ""}
 
-"RESULT":   SUCCESS - guest_added (успешно зарегистрирован)
-            ERROR - any_error   (любые не предусмотренные ошибки)
-            ACCESS_DENIED - registration_denial (отказ в регистрации на этапе проверки учетная запись компании или пользователя не активна)
-            IS_BLOCKED - car_is_blocked (номер авто заблокирован)
-            WARNING - is_exist (пользователь с FRemoteID уже найден в базе)
+"RESULT":   SUCCESS - guest_added (Заявка успешно зарегистрирована)
+            ERROR - any_error   (Произошла ошибка при регистрации заявки)
+            ACCESS_DENIED - registration_denial (Отказ в регистрации, аккаунт заблокирован)
+            IS_BLOCKED - car_is_blocked (Отказ в регистрации, номер авто в черном списке)
+            WARNING - is_exist (Заявка уже была создана)

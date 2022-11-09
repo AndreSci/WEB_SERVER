@@ -2,6 +2,13 @@ from misc.logger import Logger
 from database.db_connection import connect_db
 
 
+SUCCESS_GUEST_ADDED = 'Заявка успешно зарегистрирована'
+ERROR_ANY_ERROR = 'Произошла ошибка при регистрации заявки'
+ACCESS_DENIED_REGISTRATION_DENIAL = 'Отказ в регистрации, аккаунт заблокирован'
+IS_BLOCKED_CAR_IS_BLOCKED = 'Отказ в регистрации, номер авто в черном списке'
+WARNING_IS_EXIST = 'Заявка уже была создана'
+
+
 # Создаем строку для запроса в БД
 def do_request_str(last_name, first_name, middle_name, car_number, remote_id, activity,
                    date_from, date_to, account_id, phone_number, invite_code) -> str:
@@ -66,8 +73,6 @@ class CreateGuestDB:
                                 f"and taccount.FActivity = 1")
                 request_activity = cur.fetchall()
 
-                # TODO проверять номер машины на правильность написания (исключать пробелы и англ. буквы)
-
                 # Если есть номер авто проверяем его в черном списке
                 if car_number:
                     cur.execute(f"select FID "
@@ -86,21 +91,21 @@ class CreateGuestDB:
 
                 if len(request_activity) == 0:
                     ret_value["status"] = "ACCESS_DENIED"
-                    ret_value["desc"] = "registration_denial"
+                    ret_value["desc"] = ACCESS_DENIED_REGISTRATION_DENIAL
 
                     logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\t"
                                    f"Регистрация заявки отклонена AccountID: {account_id}.")
 
                 elif len(is_exist) != 0:
                     ret_value["status"] = "WARNING"
-                    ret_value["desc"] = "is_exist"
+                    ret_value["desc"] = WARNING_IS_EXIST
 
                     ret_value["data"] = is_exist[0]
                     logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\tОшибка RemoteID: {remote_id} уже занят.")
 
                 elif len(is_blocked) != 0:
                     ret_value["status"] = "IS_BLOCKED"
-                    ret_value["desc"] = "car_is_blocked"
+                    ret_value["desc"] = IS_BLOCKED_CAR_IS_BLOCKED
 
                     # Загружаем данные в базу
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 0,
@@ -128,12 +133,12 @@ class CreateGuestDB:
                     logger.add_log(f"CreateGuestDB.add_guest - "
                                    f"\tSUCCESS\tУспешно добавлен GUEST в базу данных Account_ID: {account_id}")
                     ret_value["status"] = "SUCCESS"
-                    ret_value["desc"] = "guest_added"
+                    ret_value["desc"] = SUCCESS_GUEST_ADDED
 
             connection.close()
 
         except Exception as ex:
             logger.add_log(f"CreateGuestDB.add_guest - \tERROR\tОшибка работы с базой данных: {ex}")
-            ret_value["desc"] = "any_error"
+            ret_value["desc"] = ERROR_ANY_ERROR
 
         return ret_value
