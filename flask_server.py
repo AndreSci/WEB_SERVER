@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, make_response, jsonify
+import requests
 
 from misc.util import SettingsIni
 from misc.logger import Logger
@@ -13,7 +14,7 @@ from database.driver.rest_driver import ConDriver
 
 
 ERROR_ACCESS_IP = 'access_block_ip'
-ERROR_READ_JSON = 'error_read_json'
+ERROR_READ_JSON = 'error_read_request'
 
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
@@ -188,14 +189,16 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # DRIVER FUNCTION ------
 
     @app.route('/DoAddPerson', methods=['POST'])
-    def add_guest_driver():
+    def add_person():
+        """ Добавляет персону в терминалы без фото """
+
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoAddGuest запрос от ip: {user_ip}")
 
         if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = "Ошибка доступа по IP"
+            json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
                 res_json = request.json
@@ -216,32 +219,67 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoAddPersonWithFace', methods=['POST'])
-    def add_guest_with_face_driver():
+    @app.route('/DoAddEmployeePhoto', methods=['POST'])
+    def add_employee_photo():
+        """ Добавляет сотрудника в терминалы с фото лица """
+
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoAddGuestWithFace запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoAddEmployeePhoto запрос от ip: {user_ip}")
 
         if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = "Ошибка доступа по IP"
+            json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
                 res_json = request.json
 
-                # создаем и подключаемся к драйверу Коли
-                connect_driver = ConDriver(set_ini)
-                result = connect_driver.add_person_with_face(res_json, logger)
+                res_base_helper = requests.get(f'http://{set_ini["hl_host"]}:{set_ini["hl_port"]}/getcardholderbyfid',
+                                               params={"fid": res_json["id"]})
+
+                res_base_helper = res_base_helper.json()
+                # print(res_base_helper)
+
+                result = res_base_helper["RESULT"]
+
+                result = "SUCCESS"  # TODO убрать в релизе
 
                 if result == "SUCCESS":
+
+                    res_driver = {"RESULT": "SUCCESS"}  # TODO убрать в релизе
+
+                    res_json["id"] = res_base_helper["Data"]["ID"]
+                    res_json["name"] = res_base_helper["Data"]["FName"]
+
+                    # создаем и подключаемся к драйверу Коли
+                    connect_driver = ConDriver(set_ini)
+
+                    res_driver = connect_driver.add_person_with_face(res_json, logger)    # TODO открыть в релизе
+
+                    if res_driver["RESULT"] == "ERROR":
+                        logger.add_log(f"ERROR\tDoAddEmployeePhoto\tОшибка добавления фото {res_driver['DATA']}")
+                        result = 'DRIVER'
+
+                # Незначительная нагрузка
+                json_replay["DESC"] = res_base_helper["Description"]
+
+                # Задумка на случай добавления ситуаций
+                if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
-                    json_replay["DESC"] = f"Персона успешно добавлена."
+                elif result == "ERROR":
+                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                elif result == "DRIVER":
+                    json_replay["DESC"] = f"Была добавлена запись в базу, но при добавлении фото произошла ошибка"
+                elif result == "WARNING":
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                elif result == "NotDefined":
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
                 else:
-                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
+                    pass
 
             except Exception as ex:
-                json_replay['DESC'] = "Ошибка чтения Json из запроса"
-                logger.add_log(f"ERROR\tDoAddGuestWithFace\tИсключение вызвало чтение Json из запроса {ex}")
+                json_replay['DESC'] = ERROR_READ_JSON
+                logger.add_log(f"ERROR\tDoAddEmployeePhoto\tИсключение вызвало {ex}")
 
         return jsonify(json_replay)
 

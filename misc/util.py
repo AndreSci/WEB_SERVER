@@ -29,6 +29,9 @@ class SettingsIni:
                 # driver
                 self.settings_ini["dr_host"] = self.settings_file["DRIVER"]["HOST"]
                 self.settings_ini["dr_port"] = self.settings_file["DRIVER"]["PORT"]
+                # helper
+                self.settings_ini["hl_host"] = self.settings_file["HELPER"]["HOST"]
+                self.settings_ini["hl_port"] = self.settings_file["HELPER"]["PORT"]
 
                 ret_value["result"] = True
 

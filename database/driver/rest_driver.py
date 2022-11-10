@@ -43,16 +43,15 @@ class ConDriver:
         return ret_value
 
     def add_person_with_face(self, json_data: json, logger: Logger) -> str:
-        ret_value = "ERROR"
+        ret_value = {"RESULT": "ERROR", "DATA": "Не ответа от драйвера терминалов"}
         try:
             result = requests.post(f"http://{self.settings_ini['dr_host']}:"
                                    f"{self.settings_ini['dr_port']}/addPersonWithFace",
                                    data=json_data)
 
-            json_data = result.json()
-            ret_value = json_data["RESULT"]
+            ret_value = result.json()
 
-            if ret_value == "ERROR":
+            if ret_value["RESULT"] == "ERROR":
                 logger.add_log(f"ERROR\tОшибка на драйвере - {json_data['DATA']}")
 
         except Exception as ex:
