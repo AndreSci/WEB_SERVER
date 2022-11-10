@@ -187,7 +187,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # DRIVER FUNCTION ------
 
-    @app.route('/DoAddGuest', methods=['POST'])
+    @app.route('/DoAddPerson', methods=['POST'])
     def add_guest_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -216,7 +216,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoAddGuestWithFace', methods=['POST'])
+    @app.route('/DoAddPersonWithFace', methods=['POST'])
     def add_guest_with_face_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -245,7 +245,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoUpdateGuest', methods=['POST'])
+    @app.route('/DoUpdatePerson', methods=['POST'])
     def update_guest_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -274,7 +274,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoDeleteGuest', methods=['POST'])
+    @app.route('/DoDeletePerson', methods=['POST'])
     def delete_guest_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
