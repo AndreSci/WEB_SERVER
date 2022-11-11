@@ -44,22 +44,11 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoAddIp запрос от ip: {user_ip}")
 
         if not allow_ip.find_ip(user_ip, logger, 2):  # Устанавливаем activity_lvl=2 для проверки уровня доступа
-
             json_replay["DESC"] = "Ошибка доступа по IP"
         else:
-            json_request = dict()
 
-            try:  # Обработка случая когда Json пуст или имеет неправильный формат
+            if request.is_json:
                 json_request = request.json
-            except Exception as ex:
-                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ex}")
-
-            if not json_request:
-
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
-
-            else:
 
                 new_ip = json_request.get("ip")
                 activity = int(json_request.get("activity"))
@@ -68,6 +57,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 json_replay["RESULT"] = "SUCCESS"
                 json_replay["DESC"] = f"IP - {new_ip} добавлен с доступом {activity}"
+            else:
+                logger.add_log(f"ERROR\tDoCreateGuest Не удалось прочитать Json из request")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
 
         return jsonify(json_replay)
 
@@ -82,25 +75,16 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
 
+        # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            json_request = dict()
+            # Проверяем наличие Json
+            if request.is_json:
 
-            try:    # Обработка случая когда Json пуст или имеет неправильный формат
                 json_request = request.json
-            except Exception as ex:
-                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ex}")
-
-            if not json_request:
-
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = ERROR_READ_JSON
-
-            else:
-
                 # Проверяем номер авто
                 car_number = json_request.get("FCarNumber")
 
@@ -127,40 +111,39 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 json_replay["DESC"] = db_result["desc"]
                 json_replay["DATA"] = db_result["data"]
 
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: В запросе нет Json")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = ERROR_READ_JSON
+
         return jsonify(json_replay)
 
     @app.route('/DoGetCardHolders', methods=['GET'])
     def get_card_holder():
+        """ Функция возвращает список сотрудников компании """
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoGetCardHolders запрос от ip: {user_ip}")
 
-        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
+        # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
-            json_replay["RESULT"] = "ERROR"
-            json_replay["DESC"] = "Ошибка доступа по IP"
+            json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             json_request = dict()
 
-            try:  # Обработка случая когда Json пуст или имеет неправильный формат
-
+            # Проверяем запрос на Json
+            if request.is_json:
+                json_request = request.json
+            else:
                 json_request['FAccountID'] = request.args.get("FAccountID")
                 json_request['FINN'] = request.args.get("FINN")
-            except Exception as ex:
-                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения args data: {ex}, "
-                               f"Попытка чтения данных из Json.")
 
-                try:
-                    json_request = request.json
-                except KeyError as ke:
-                    logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: {ke}")
-                    json_request = {}
-
-            if not json_request:
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = "Ошибка. Не удалось прочитать Json из request."
-
+            if not json_request['FAccountID']:
+                logger.add_log(f"ERROR\tDoGetCardHolders - Не удалось прочитать args/data из request")
+                json_replay["DESC"] = "Ошибка. Не удалось прочитать args/data из request."
             else:
 
                 account_id = json_request.get("FAccountID")
@@ -177,11 +160,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_replay["DESC"] = db_fdb["desc"]
 
                     if db_fdb["status"]:
+                        json_replay["RESULT"] = "SUCCESS"
                         json_replay["DATA"] = db_fdb["data"]
-                    else:
-                        json_replay["RESULT"] = "ERROR"
+
                 else:
-                    json_replay["RESULT"] = "ERROR"
                     json_replay["DESC"] = db_sac3["desc"]
 
         return jsonify(json_replay)
@@ -197,6 +179,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoAddGuest запрос от ip: {user_ip}")
 
+        # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
@@ -223,30 +206,38 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def add_employee_photo():
         """ Добавляет сотрудника в терминалы с фото лица """
 
+        test_mode = True  # TODO убрать в релизе
+
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoAddEmployeePhoto запрос от ip: {user_ip}")
 
+        # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
+
+        elif test_mode:
+            # Тестовый раздел для проверки связи и получения ответа
+            json_replay = {"RESULT": "SUCCESS", "DESC": "Успешное выполнение функции", "DATA": ""}
+
         else:
-            try:
+            # Проверяем наличие Json в запросе
+            if request.is_json:
                 res_json = request.json
 
                 res_base_helper = requests.get(f'http://{set_ini["hl_host"]}:{set_ini["hl_port"]}/getcardholderbyfid',
                                                params={"fid": res_json["id"]})
 
-                res_base_helper = res_base_helper.json()
-                # print(res_base_helper)
-
-                result = res_base_helper["RESULT"]
-
-                result = "SUCCESS"  # TODO убрать в релизе
+                try:
+                    res_base_helper = res_base_helper.json()
+                    result = res_base_helper.get("RESULT")
+                except Exception as ex:
+                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t1: {ERROR_READ_JSON}: {ex}")
+                    json_replay["DESC"] = ERROR_READ_JSON
+                    result = "EXCEPTION"
 
                 if result == "SUCCESS":
-
-                    res_driver = {"RESULT": "SUCCESS"}  # TODO убрать в релизе
 
                     res_json["id"] = res_base_helper["Data"]["ID"]
                     res_json["name"] = res_base_helper["Data"]["FName"]
@@ -254,14 +245,17 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     # создаем и подключаемся к драйверу Коли
                     connect_driver = ConDriver(set_ini)
 
-                    res_driver = connect_driver.add_person_with_face(res_json, logger)    # TODO открыть в релизе
+                    res_driver = connect_driver.add_person_with_face(res_json, logger)
 
                     if res_driver["RESULT"] == "ERROR":
                         logger.add_log(f"ERROR\tDoAddEmployeePhoto\tОшибка добавления фото {res_driver['DATA']}")
                         result = 'DRIVER'
 
-                # Незначительная нагрузка
-                json_replay["DESC"] = res_base_helper["Description"]
+                if result == "EXCEPTION":
+                    result = "ERROR"
+                else:
+                    # Незначительная нагрузка
+                    json_replay["DESC"] = res_base_helper["Description"]
 
                 # Задумка на случай добавления ситуаций
                 if result == "SUCCESS":
@@ -277,9 +271,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     pass
 
-            except Exception as ex:
-                json_replay['DESC'] = ERROR_READ_JSON
-                logger.add_log(f"ERROR\tDoAddEmployeePhoto\tИсключение вызвало {ex}")
+            else:
+                logger.add_log(f"ERROR\tDoAddEmployeePhoto\t{ERROR_READ_JSON}")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = f"Ошибка. {ERROR_READ_JSON}"
 
         return jsonify(json_replay)
 
@@ -290,8 +285,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoUpdateGuest запрос от ip: {user_ip}")
 
+        # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = "Ошибка доступа по IP"
+            json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
                 res_json = request.json
@@ -320,7 +316,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoDeleteGuest запрос от ip: {user_ip}")
 
         if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = "Ошибка доступа по IP"
+            json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
                 res_json = request.json
@@ -348,8 +344,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoOnPhoto запрос от ip: {user_ip}")
 
+        # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = "Ошибка доступа по IP"
+            json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
                 res_json = request.json
