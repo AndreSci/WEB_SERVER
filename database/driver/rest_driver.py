@@ -52,7 +52,7 @@ class ConDriver:
             ret_value = result.json()
 
             if ret_value["RESULT"] == "ERROR":
-                logger.add_log(f"ERROR\tОшибка на драйвере - {json_data['DATA']}")
+                logger.add_log(f"ERROR\tОшибка на драйвере - {ret_value.get('DATA')}")
 
         except Exception as ex:
             logger.add_log(f"ERROR\tИсключение вызвало связь с Драйвером - {ex}")

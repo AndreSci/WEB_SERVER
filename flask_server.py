@@ -11,6 +11,7 @@ from misc.block_logs import block_flask_logs
 from database.requests.db_create_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
 from database.driver.rest_driver import ConDriver
+from database.base_helper.helper import BSHelper
 
 
 ERROR_ACCESS_IP = 'access_block_ip'
@@ -149,19 +150,40 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 account_id = json_request.get("FAccountID")
                 finn = json_request.get("FINN")
 
+                con_db = CardHoldersDB()
+
                 # Запрос в БД sac3
                 db_sac3 = CardHoldersDB.get_sac3(account_id, logger)
 
                 if db_sac3["status"]:
 
                     # Запрос в БД FIREBIRD
-                    db_fdb = CardHoldersDB.get_fdb(finn, logger)
+                    db_fdb = con_db.get_fdb(finn, logger)
 
                     json_replay["DESC"] = db_fdb["desc"]
 
                     if db_fdb["status"]:
                         json_replay["RESULT"] = "SUCCESS"
-                        json_replay["DATA"] = db_fdb["data"]
+                        # json_replay["DATA"] = db_fdb["data"]
+
+                        list_id = list()
+
+                        for it in db_fdb['data']:
+                            list_id.append(it["fid"])
+
+                        face_db = con_db.get_with_face(list_id, logger)
+
+                        ret_list_id = list()
+
+                        # Перезаписываем в новый лист данные пользователей с полем isphoto
+                        for it in db_fdb["data"]:
+                            if it["fid"] in str(face_db['data']):
+                                it['isphoto'] = 1
+                            else:
+                                it['isphoto'] = 0
+                            ret_list_id.append(it)
+
+                        json_replay["DATA"] = ret_list_id
 
                 else:
                     json_replay["DESC"] = db_sac3["desc"]
@@ -206,12 +228,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def add_employee_photo():
         """ Добавляет сотрудника в терминалы с фото лица """
 
-        test_mode = True  # TODO убрать в релизе
+        test_mode = False  # TODO убрать в релизе
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoAddEmployeePhoto запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoAddEmployeePhoto\tзапрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -225,22 +247,27 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             # Проверяем наличие Json в запросе
             if request.is_json:
                 res_json = request.json
+                res_base_helper = dict()
 
-                res_base_helper = requests.get(f'http://{set_ini["hl_host"]}:{set_ini["hl_port"]}/getcardholderbyfid',
-                                               params={"fid": res_json["id"]})
+                con_helper = BSHelper(set_ini)
 
                 try:
+                    res_base_helper = requests.get(f'http://{set_ini["hl_host"]}:'
+                                                   f'{set_ini["hl_port"]}/getcardholderbyfid',
+                                                    params={"fid": res_json["id"]})
+
                     res_base_helper = res_base_helper.json()
+                    print(res_base_helper)
                     result = res_base_helper.get("RESULT")
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t1: {ERROR_READ_JSON}: {ex}")
-                    json_replay["DESC"] = ERROR_READ_JSON
+                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t1: error_with_base_helper: {ex}")
+                    json_replay["DESC"] = "error_with_base_helper"
                     result = "EXCEPTION"
 
                 if result == "SUCCESS":
 
-                    res_json["id"] = res_base_helper["Data"]["ID"]
-                    res_json["name"] = res_base_helper["Data"]["FName"]
+                    res_json["id"] = res_base_helper["Data"]["id"]
+                    res_json["name"] = res_base_helper["Data"]["name"]
 
                     # создаем и подключаемся к драйверу Коли
                     connect_driver = ConDriver(set_ini)
@@ -248,11 +275,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     res_driver = connect_driver.add_person_with_face(res_json, logger)
 
                     if res_driver["RESULT"] == "ERROR":
-                        logger.add_log(f"ERROR\tDoAddEmployeePhoto\tОшибка добавления фото {res_driver['DATA']}")
+                        logger.add_log(f"ERROR\tDoAddEmployeePhoto\t2: Ошибка добавления фото {res_driver['DATA']}")
                         result = 'DRIVER'
 
+                        # отменяем заявку в базе через base_helper
+                        con_helper.deactivate_person(res_json, logger)
+
                 if result == "EXCEPTION":
-                    result = "ERROR"
+                    pass
                 else:
                     # Незначительная нагрузка
                     json_replay["DESC"] = res_base_helper["Description"]
@@ -261,18 +291,20 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
                 elif result == "ERROR":
-                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t3: {json_replay['DESC']}")
+                elif result == "EXCEPTION":
+                    pass
                 elif result == "DRIVER":
-                    json_replay["DESC"] = f"Была добавлена запись в базу, но при добавлении фото произошла ошибка"
+                    json_replay["DESC"] = f"При добавлении фото произошла ошибка"
                 elif result == "WARNING":
-                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t4: {json_replay['DESC']}")
                 elif result == "NotDefined":
-                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t5: {json_replay['DESC']}")
                 else:
                     pass
 
             else:
-                logger.add_log(f"ERROR\tDoAddEmployeePhoto\t{ERROR_READ_JSON}")
+                logger.add_log(f"ERROR\tDoAddEmployeePhoto\t6: {ERROR_READ_JSON}")
                 json_replay["RESULT"] = "ERROR"
                 json_replay["DESC"] = f"Ошибка. {ERROR_READ_JSON}"
 
