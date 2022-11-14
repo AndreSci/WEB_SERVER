@@ -50,7 +50,7 @@ class CardHoldersDB:
 
         ret_value = {"status": False, "data": list(), "desc": ''}
 
-        try:    # TODO Сделать метод закрытия конекта с базой
+        try:
             # Создаем подключение
             if self.connection_is_fdb == 0:
                 self.connection_is_fdb = connect_fire_bird_db()

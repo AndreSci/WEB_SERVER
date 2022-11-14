@@ -17,13 +17,13 @@ class BSHelper:
                                            params={"fid": res_json["id"]})
 
             res_base_helper = res_base_helper.json()
-            print(res_base_helper)
-            result["result"] = res_base_helper.get("RESULT")
+            # print(res_base_helper)
+            result["RESULT"] = res_base_helper.get("RESULT")
             result["DESC"] = res_base_helper.get("Description")
         except Exception as ex:
             logger.add_log(f"ERROR\tBSHelper.get_card_holder\t1: error_with_base_helper: {ex}")
             result["DESC"] = "error_with_base_helper"
-            result["result"] = "EXCEPTION"
+            result["RESULT"] = "EXCEPTION"
 
         return result
 
@@ -37,12 +37,18 @@ class BSHelper:
                                            params={"id": res_json["id"]})
 
             res_base_helper = res_base_helper.json()
-            print(res_base_helper)
-            result["result"] = res_base_helper.get("RESULT")
+            # print(res_base_helper)
+            result["RESULT"] = res_base_helper.get("RESULT")
             result["DESC"] = res_base_helper.get("Description")
+
+            if result['RESULT'] == "SUCCESS":
+                logger.add_log(f"EVENT\tBSHelper.deactivate_person\tПроизведена отмена заявки - {res_json['id']}")
+            else:
+                logger.add_log(f"WARNING\tBSHelper.deactivate_person\tНе удалось отменить заявку - {res_json['id']}")
+
         except Exception as ex:
-            logger.add_log(f"ERROR\tBSHelper.deactivate_person\t1: error_with_base_helper: {ex}")
+            logger.add_log(f"ERROR\tBSHelper.deactivate_person\t2: error_with_base_helper: {ex}")
             result["DESC"] = "error_with_base_helper"
-            result["result"] = "EXCEPTION"
+            result["RESULT"] = "EXCEPTION"
 
         return result

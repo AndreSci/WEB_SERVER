@@ -181,12 +181,82 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                                 it['isphoto'] = 1
                             else:
                                 it['isphoto'] = 0
+
                             ret_list_id.append(it)
 
                         json_replay["DATA"] = ret_list_id
 
                 else:
                     json_replay["DESC"] = db_sac3["desc"]
+
+        return jsonify(json_replay)
+
+    @app.route('/DoAddEmployeePhoto', methods=['POST'])
+    def add_employee_photo():
+        """ Добавляет сотрудника в терминалы с фото лица """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoAddEmployeePhoto\tзапрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+            # Проверяем наличие Json в запросе
+            if request.is_json:
+                res_json = request.json
+
+                con_helper = BSHelper(set_ini)
+
+                # Отправляем запрос на получение данных сотрудника
+                res_base_helper = con_helper.get_card_holder(res_json, logger)
+                result = res_base_helper.get("RESULT")
+
+                if result == "SUCCESS":
+
+                    res_json["id"] = res_base_helper["Data"]["id"]
+                    res_json["name"] = res_base_helper["Data"]["name"]
+
+                    # создаем и подключаемся к драйверу Коли
+                    connect_driver = ConDriver(set_ini)
+
+                    res_driver = connect_driver.add_person_with_face(res_json, logger)
+
+                    if res_driver["RESULT"] == "ERROR":
+                        logger.add_log(f"ERROR\tDoAddEmployeePhoto\t2: Ошибка добавления фото {res_driver['DATA']}")
+                        result = 'DRIVER'
+
+                        # отменяем заявку в базе через base_helper
+                        con_helper.deactivate_person(res_json, logger)
+
+                if result == "EXCEPTION":
+                    pass
+                else:
+                    # Незначительная нагрузка
+                    json_replay["DESC"] = res_base_helper["DESC"]
+
+                # Задумка на случай добавления ситуаций
+                if result == "SUCCESS":
+                    json_replay["RESULT"] = "SUCCESS"
+                elif result == "ERROR":
+                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t3: {json_replay['DESC']}")
+                elif result == "EXCEPTION":
+                    pass
+                elif result == "DRIVER":
+                    json_replay["DESC"] = f"При добавлении фото произошла ошибка"
+                elif result == "WARNING":
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t4: {json_replay['DESC']}")
+                elif result == "NotDefined":
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t5: {json_replay['DESC']}")
+                else:
+                    pass
+
+            else:
+                logger.add_log(f"ERROR\tDoAddEmployeePhoto\t6: {ERROR_READ_JSON}")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = f"Ошибка. {ERROR_READ_JSON}"
 
         return jsonify(json_replay)
 
@@ -221,92 +291,6 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             except Exception as ex:
                 json_replay['DESC'] = "Ошибка чтения Json из запроса"
                 logger.add_log(f"ERROR\tDoAddGuest\tИсключение вызвало чтение Json из запроса {ex}")
-
-        return jsonify(json_replay)
-
-    @app.route('/DoAddEmployeePhoto', methods=['POST'])
-    def add_employee_photo():
-        """ Добавляет сотрудника в терминалы с фото лица """
-
-        test_mode = False  # TODO убрать в релизе
-
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-
-        user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoAddEmployeePhoto\tзапрос от ip: {user_ip}")
-
-        # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = ERROR_ACCESS_IP
-
-        elif test_mode:
-            # Тестовый раздел для проверки связи и получения ответа
-            json_replay = {"RESULT": "SUCCESS", "DESC": "Успешное выполнение функции", "DATA": ""}
-
-        else:
-            # Проверяем наличие Json в запросе
-            if request.is_json:
-                res_json = request.json
-                res_base_helper = dict()
-
-                con_helper = BSHelper(set_ini)
-
-                try:
-                    res_base_helper = requests.get(f'http://{set_ini["hl_host"]}:'
-                                                   f'{set_ini["hl_port"]}/getcardholderbyfid',
-                                                    params={"fid": res_json["id"]})
-
-                    res_base_helper = res_base_helper.json()
-                    print(res_base_helper)
-                    result = res_base_helper.get("RESULT")
-                except Exception as ex:
-                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t1: error_with_base_helper: {ex}")
-                    json_replay["DESC"] = "error_with_base_helper"
-                    result = "EXCEPTION"
-
-                if result == "SUCCESS":
-
-                    res_json["id"] = res_base_helper["Data"]["id"]
-                    res_json["name"] = res_base_helper["Data"]["name"]
-
-                    # создаем и подключаемся к драйверу Коли
-                    connect_driver = ConDriver(set_ini)
-
-                    res_driver = connect_driver.add_person_with_face(res_json, logger)
-
-                    if res_driver["RESULT"] == "ERROR":
-                        logger.add_log(f"ERROR\tDoAddEmployeePhoto\t2: Ошибка добавления фото {res_driver['DATA']}")
-                        result = 'DRIVER'
-
-                        # отменяем заявку в базе через base_helper
-                        con_helper.deactivate_person(res_json, logger)
-
-                if result == "EXCEPTION":
-                    pass
-                else:
-                    # Незначительная нагрузка
-                    json_replay["DESC"] = res_base_helper["Description"]
-
-                # Задумка на случай добавления ситуаций
-                if result == "SUCCESS":
-                    json_replay["RESULT"] = "SUCCESS"
-                elif result == "ERROR":
-                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t3: {json_replay['DESC']}")
-                elif result == "EXCEPTION":
-                    pass
-                elif result == "DRIVER":
-                    json_replay["DESC"] = f"При добавлении фото произошла ошибка"
-                elif result == "WARNING":
-                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t4: {json_replay['DESC']}")
-                elif result == "NotDefined":
-                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t5: {json_replay['DESC']}")
-                else:
-                    pass
-
-            else:
-                logger.add_log(f"ERROR\tDoAddEmployeePhoto\t6: {ERROR_READ_JSON}")
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = f"Ошибка. {ERROR_READ_JSON}"
 
         return jsonify(json_replay)
 
@@ -360,6 +344,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
                     json_replay["DESC"] = f"Персона успешно удалена."
+
                 else:
                     json_replay["DESC"] = f"Драйвер ответил ошибкой."
 
@@ -369,7 +354,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoOnPhoto', methods=['POST'])
+    @app.route('/DoAddPhoto', methods=['POST'])
     def add_new_photo_driver():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
