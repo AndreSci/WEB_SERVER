@@ -59,7 +59,8 @@ class CardHoldersDB:
 
             cur.execute(f"select TAPCCARDHOLDER.FID1, FLASTNAME, FFIRSTNAME, FMIDDLENAME "
                         f"from TAPCTREEOBJECT, TAPCCARDHOLDER "
-                        f"where FCOMPANYID1 = TAPCTREEOBJECT.FID1 and FALIAS = 'ИНН{finn}'")
+                        f"where FCOMPANYID1 = TAPCTREEOBJECT.FID1 and FALIAS = 'ИНН{finn}' "
+                        f"order by FLASTNAME")
             res = cur.fetchall()
 
             res_size = len(res)

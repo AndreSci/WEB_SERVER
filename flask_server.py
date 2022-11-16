@@ -16,6 +16,7 @@ from database.base_helper.helper import BSHelper
 
 ERROR_ACCESS_IP = 'access_block_ip'
 ERROR_READ_JSON = 'error_read_request'
+ERROR_ON_SERVER = 'server_error'
 
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
@@ -211,14 +212,17 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 con_helper = BSHelper(set_ini)
 
                 # Отправляем запрос на получение данных сотрудника
+                logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучен json: {res_json.get('id')}")
                 res_base_helper = con_helper.get_card_holder(res_json, logger)
                 result = res_base_helper.get("RESULT")
+
+                logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПосле BaseHelper "
+                               f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}")
 
                 if result == "SUCCESS":
 
                     res_json["id"] = res_base_helper["DATA"].get("id")
                     res_json["name"] = res_base_helper["DATA"].get("name")
-
                     # создаем и подключаемся к драйверу Коли
                     connect_driver = ConDriver(set_ini)
 
@@ -257,6 +261,48 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 logger.add_log(f"ERROR\tDoAddEmployeePhoto\t6: {ERROR_READ_JSON}")
                 json_replay["RESULT"] = "ERROR"
                 json_replay["DESC"] = f"Ошибка. {ERROR_READ_JSON}"
+
+        return jsonify(json_replay)
+
+    @app.route('/DoDeletePhoto', methods=['POST'])
+    def delete_person():
+        json_replay = {"RESULT": "ERROR", "DESC": ERROR_ON_SERVER, "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoDeletePhoto запрос от ip: {user_ip}")
+
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+            try:
+                res_json = request.json
+
+                con_helper = BSHelper(set_ini)
+
+                # Отправляем запрос на удаление данных сотрудника
+                res_base_helper = con_helper.deactivate_person_apacsid(res_json, logger)
+                result = res_base_helper.get("RESULT")
+
+                if result == "SUCCESS":
+                    res_json["id"] = res_base_helper["DATA"].get("id")
+                    res_json["name"] = res_base_helper["DATA"].get("name")
+
+                    # создаем и подключаемся к драйверу Коли
+                    connect_driver = ConDriver(set_ini)
+                    res_driver = connect_driver.delete_person(res_json, logger)
+
+                    if res_driver == "SUCCESS":
+                        json_replay["RESULT"] = "SUCCESS"
+                        json_replay["DESC"] = f"Пропуск успешно удалена."
+                        logger.add_log(f"SUCCESS\tDoDeletePhoto\tПропуск для id: {res_json['id']} успешно удален.")
+
+                else:
+                    logger.add_log(f"ERROR\tDoDeletePhoto\tBaseHelper DESC: {res_base_helper.get('DESC')}, "
+                                   f"DATA: {res_base_helper.get('DATA')}")
+
+            except Exception as ex:
+                json_replay['DESC'] = ERROR_READ_JSON
+                logger.add_log(f"ERROR\tDoDeletePhoto\tИсключение вызвало {ex}")
 
         return jsonify(json_replay)
 
@@ -321,36 +367,6 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             except Exception as ex:
                 json_replay['DESC'] = "Ошибка чтения Json из запроса"
                 logger.add_log(f"ERROR\tDoUpdateGuest\tИсключение вызвало чтение Json из запроса {ex}")
-
-        return jsonify(json_replay)
-
-    @app.route('/DoDeletePerson', methods=['POST'])
-    def delete_guest_driver():
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-
-        user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoDeleteGuest запрос от ip: {user_ip}")
-
-        if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = ERROR_ACCESS_IP
-        else:
-            try:
-                res_json = request.json
-
-                # создаем и подключаемся к драйверу Коли
-                connect_driver = ConDriver(set_ini)
-                result = connect_driver.delete_person(res_json, logger)
-
-                if result == "SUCCESS":
-                    json_replay["RESULT"] = "SUCCESS"
-                    json_replay["DESC"] = f"Персона успешно удалена."
-
-                else:
-                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
-
-            except Exception as ex:
-                json_replay['DESC'] = "Ошибка чтения Json из запроса"
-                logger.add_log(f"ERROR\tDoDeleteGuest\tИсключение вызвало чтение Json из запроса {ex}")
 
         return jsonify(json_replay)
 
