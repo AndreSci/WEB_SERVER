@@ -93,7 +93,7 @@ class CreateGuestDB:
                     ret_value["status"] = "ACCESS_DENIED"
                     ret_value["desc"] = ACCESS_DENIED_REGISTRATION_DENIAL
 
-                    logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\t"
+                    logger.add_log(f"\tWARNING\tCreateGuestDB.add_guest - "
                                    f"Регистрация заявки отклонена AccountID: {account_id}.")
 
                 elif len(is_exist) != 0:
@@ -101,7 +101,7 @@ class CreateGuestDB:
                     ret_value["desc"] = WARNING_IS_EXIST
 
                     ret_value["data"] = is_exist[0]
-                    logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\tОшибка RemoteID: {remote_id} уже занят.")
+                    logger.add_log(f"\tWARNING\tCreateGuestDB.add_guest - Ошибка RemoteID: {remote_id} уже занят.")
 
                 elif len(is_blocked) != 0:
                     ret_value["status"] = "IS_BLOCKED"
@@ -113,7 +113,7 @@ class CreateGuestDB:
                     cur.execute(sql_request)
 
                     connection.commit()
-                    logger.add_log(f"CreateGuestDB.add_guest - \tWARNING\tНомер {car_number} в черном списке.")
+                    logger.add_log(f"\tWARNING\tCreateGuestDB.add_guest - Номер {car_number} в черном списке.")
                 else:
                     # Загружаем данные в базу
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
@@ -130,15 +130,15 @@ class CreateGuestDB:
 
                     ret_value["data"] = is_exist[0]
 
-                    logger.add_log(f"CreateGuestDB.add_guest - "
-                                   f"\tSUCCESS\tУспешно добавлен GUEST в базу данных Account_ID: {account_id}")
+                    logger.add_log(f"\tSUCCESS\tCreateGuestDB.add_guest - "
+                                   f"Успешно добавлен GUEST в базу данных Account_ID: {account_id}")
                     ret_value["status"] = "SUCCESS"
                     ret_value["desc"] = SUCCESS_GUEST_ADDED
 
             connection.close()
 
         except Exception as ex:
-            logger.add_log(f"CreateGuestDB.add_guest - \tERROR\tОшибка работы с базой данных: {ex}")
+            logger.add_log(f"\tERROR\tCreateGuestDB.add_guest - Ошибка работы с базой данных: {ex}")
             ret_value["desc"] = ERROR_ANY_ERROR
 
         return ret_value

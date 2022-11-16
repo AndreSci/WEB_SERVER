@@ -216,8 +216,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result == "SUCCESS":
 
-                    res_json["id"] = res_base_helper["Data"]["id"]
-                    res_json["name"] = res_base_helper["Data"]["name"]
+                    res_json["id"] = res_base_helper["DATA"].get("id")
+                    res_json["name"] = res_base_helper["DATA"].get("name")
 
                     # создаем и подключаемся к драйверу Коли
                     connect_driver = ConDriver(set_ini)
