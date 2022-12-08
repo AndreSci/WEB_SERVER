@@ -400,5 +400,97 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    # EMPLOYEE ----
+
+    @app.route('/DoCreateEmployee', methods=['POST'])   # TODO добавить сотрудника в компанию
+    def create_employee():
+        """ Добавляет посетителя в БД и отправляет смс если номер указан """
+
+        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["RESULT"] = "ERROR"
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            # Проверяем наличие Json
+            if request.is_json:
+
+                json_request = request.json
+
+                pass
+
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tDoCreateEmployee ошибка чтения Json: В запросе нет Json")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = ERROR_READ_JSON
+
+        return jsonify(json_replay)
+
+    @app.route('/DoDeleteEmployee', methods=['POST'])   # TODO удалить сотрудника из компании
+    def delete_employee():
+        """ Добавляет посетителя в БД и отправляет смс если номер указан """
+
+        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoDeleteEmployee запрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["RESULT"] = "ERROR"
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            # Проверяем наличие Json
+            if request.is_json:
+
+                json_request = request.json
+
+                pass
+
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tDoDeleteEmployee ошибка чтения Json: В запросе нет Json")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = ERROR_READ_JSON
+
+        return jsonify(json_replay)
+
+    @app.route('/GetBlockCar', methods=['GET'])     # TODO получать информацию блока авто для личного кабинета
+    def get_block_car():
+        """ Добавляет посетителя в БД и отправляет смс если номер указан """
+
+        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["RESULT"] = "ERROR"
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            # Проверяем наличие Json
+            if request.is_json:
+
+                json_request = request.json
+
+                pass
+
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: В запросе нет Json")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = ERROR_READ_JSON
+
+        return jsonify(json_replay)
+
     # RUN SERVER FLASK  ------
     app.run(debug=False, host=set_ini["host"], port=int(set_ini["port"]))

@@ -46,7 +46,7 @@ class CardHoldersDB:
         return ret_value
 
     def get_fdb(self, finn: str, logger: Logger) -> dict:
-        """ Принимает словарь с данными и logger """
+        """ Принимает ИНН компании и logger """
 
         ret_value = {"status": False, "data": list(), "desc": ''}
 
