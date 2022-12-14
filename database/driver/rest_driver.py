@@ -42,8 +42,8 @@ class ConDriver:
 
         return ret_value
 
-    def add_person_with_face(self, json_data: json, logger: Logger) -> str:
-        ret_value = {"RESULT": "ERROR", "DATA": "Не ответа от драйвера терминалов"}
+    def add_person_with_face(self, json_data: json, logger: Logger) -> dict:
+        ret_value = {"RESULT": "ERROR", "DATA": dict(), "DESC": "Ошибка работы с драйвером"}
         try:
             result = requests.post(f"http://{self.settings_ini['dr_host']}:"
                                    f"{self.settings_ini['dr_port']}/addPersonWithFace",

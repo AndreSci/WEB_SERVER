@@ -229,7 +229,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     res_driver = connect_driver.add_person_with_face(res_json, logger)
 
                     if res_driver["RESULT"] == "ERROR":
-                        logger.add_log(f"ERROR\tDoAddEmployeePhoto\t2: Ошибка добавления фото {res_driver['DATA']}")
+                        json_replay['DATA'] = res_driver['DATA']
                         result = 'DRIVER'
 
                         # отменяем заявку в базе через base_helper
@@ -249,7 +249,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 elif result == "EXCEPTION":
                     pass
                 elif result == "DRIVER":
-                    json_replay["DESC"] = f"При добавлении фото произошла ошибка"
+
+                    try:
+                        json_replay["DESC"] = f"При добавлении фото произошла ошибка: {json_replay['DATA']['msg']}"
+                    except Exception as ex:
+                        logger.add_log(f"ERROR\tDoAddEmployeePhoto\tНе удалось получить данные из ответа Драйвера {ex}")
+                        json_replay["DESC"] = f"При добавлении фото произошла ошибка"
+
                 elif result == "WARNING":
                     logger.add_log(f"WARNING\tDoAddEmployeePhoto\t4: {json_replay['DESC']}")
                 elif result == "NotDefined":
@@ -260,7 +266,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             else:
                 logger.add_log(f"ERROR\tDoAddEmployeePhoto\t6: {ERROR_READ_JSON}")
                 json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = f"Ошибка. {ERROR_READ_JSON}"
+                json_replay["DESC"] = f"Ошибка: {ERROR_READ_JSON}"
 
         return jsonify(json_replay)
 
@@ -402,9 +408,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # EMPLOYEE ----
 
-    @app.route('/DoCreateEmployee', methods=['POST'])   # TODO добавить сотрудника в компанию
+    @app.route('/DoCreateEmployee', methods=['POST'])   # TODO добавить пропуск сотрудника
     def create_employee():
-        """ Добавляет посетителя в БД и отправляет смс если номер указан """
+        """ Добавляет сотрудника в БД и отправляет смс если номер указан """
 
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
@@ -432,9 +438,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoDeleteEmployee', methods=['POST'])   # TODO удалить сотрудника из компании
+    @app.route('/DoDeleteEmployee', methods=['POST'])   # TODO удалить пропуск сотрудника
     def delete_employee():
-        """ Добавляет посетителя в БД и отправляет смс если номер указан """
+        """ Удаляет сотрудника из БД """
 
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
@@ -464,12 +470,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/GetBlockCar', methods=['GET'])     # TODO получать информацию блока авто для личного кабинета
     def get_block_car():
-        """ Добавляет посетителя в БД и отправляет смс если номер указан """
+        """ Получает информацию о возможности открытия пропусков на авто """
 
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tGetBlockCar запрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -477,18 +483,61 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
+            json_request = dict()
+
+            # Проверяем запрос на Json
             if request.is_json:
-
                 json_request = request.json
-
-                pass
-
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tDoCreateGuest ошибка чтения Json: В запросе нет Json")
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = ERROR_READ_JSON
+                json_request['FAccountID'] = request.args.get("FAccountID")
+                json_request['FINN'] = request.args.get("FINN")
+
+            if not json_request['FAccountID']:
+                logger.add_log(f"ERROR\tDoGetCardHolders - Не удалось прочитать args/data из request")
+                json_replay["DESC"] = "Ошибка. Не удалось прочитать args/data из request."
+            else:
+
+                account_id = json_request.get("FAccountID")
+                finn = json_request.get("FINN")
+
+                con_db = CardHoldersDB()
+
+                # Запрос в БД sac3
+                db_sac3 = CardHoldersDB.get_sac3(account_id, logger)
+
+                if db_sac3["status"]:
+
+                    # Запрос в БД FIREBIRD
+                    db_fdb = con_db.get_fdb(finn, logger)
+
+                    json_replay["DESC"] = db_fdb["desc"]
+
+                    if db_fdb["status"]:
+                        json_replay["RESULT"] = "SUCCESS"
+                        # json_replay["DATA"] = db_fdb["data"]
+
+                        list_id = list()
+
+                        for it in db_fdb['data']:
+                            list_id.append(it["fid"])
+
+                        face_db = con_db.get_with_face(list_id, logger)
+
+                        ret_list_id = list()
+
+                        # Перезаписываем в новый лист данные пользователей с полем isphoto
+                        for it in db_fdb["data"]:
+                            if it["fid"] in str(face_db['data']):
+                                it['isphoto'] = 1
+                            else:
+                                it['isphoto'] = 0
+
+                            ret_list_id.append(it)
+
+                        json_replay["DATA"] = ret_list_id
+
+                else:
+                    json_replay["DESC"] = db_sac3["desc"]
 
         return jsonify(json_replay)
 
