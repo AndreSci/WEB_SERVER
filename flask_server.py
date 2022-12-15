@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, make_response, jsonify
 import requests
+import codecs
 
 from misc.util import SettingsIni
 from misc.logger import Logger
@@ -408,7 +409,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # EMPLOYEE ----
 
-    @app.route('/DoCreateEmployee', methods=['POST'])   # TODO добавить пропуск сотрудника
+    @app.route('/DoCreateEmployee', methods=['POST'])
     def create_employee():
         """ Добавляет сотрудника в БД и отправляет смс если номер указан """
 
@@ -428,7 +429,38 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 json_request = request.json
 
-                pass
+                first_name = json_request.get("First_Name")
+                last_name = json_request.get("Last_Name")
+                middle_name = json_request.get("Middle_Name")
+                str_inn = json_request.get("INN")
+                car_number = json_request.get("Car_Number")
+
+                try:
+                    res = requests.get(f'http://192.168.15.10:8080/CreateEmployee'
+                                       f'?First_Name={first_name}'
+                                       f'&Last_Name={last_name}'
+                                       f'&Middle_Name={middle_name}'
+                                       f'&INN={str_inn}'
+                                       f'&Car_Number={car_number}')
+
+                    json_create = res.json()
+
+                    if json_create["RESULT"] == "SUCCESS":
+                        json_replay['DESC'] = "Успешно создан сотрудник"
+                        logger.add_log(f"EVENT\tDoCreateEmployee Успешно создан сотрудник для ИНН{str_inn}")
+                    else:
+                        logger.add_log(f"WARNING\tDoCreateEmployee "
+                                       f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
+                                       f"JSON: {json_request}")
+
+                        json_replay["RESULT"] = 'ERROR'
+                        json_replay['DATA'] = json_create["DATA"]
+                        json_replay['DESC'] = json_create["DESC"]
+
+                except Exception as ex:
+                    logger.add_log(f"ERROR\tDoCreateEmployee ошибка обращения к интерфейсу Apacs3000: {ex}")
+                    json_replay["RESULT"] = "ERROR"
+                    json_replay["DESC"] = "Ошибка связи с БД Apacs"
 
             else:
                 # Если в запросе нет Json данных
@@ -438,7 +470,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoDeleteEmployee', methods=['POST'])   # TODO удалить пропуск сотрудника
+    @app.route('/DoDeleteEmployee', methods=['POST'])   # TODO удалить сотрудника
     def delete_employee():
         """ Удаляет сотрудника из БД """
 
