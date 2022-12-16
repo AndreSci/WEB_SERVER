@@ -19,6 +19,9 @@ ERROR_ACCESS_IP = 'access_block_ip'
 ERROR_READ_JSON = 'error_read_request'
 ERROR_ON_SERVER = 'server_error'
 
+# IP_HOST_APACS = '192.168.15.10'
+IP_HOST_APACS = '127.0.0.1'
+
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
     """ Главная функция создания сервера Фласк. """
@@ -436,7 +439,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 car_number = json_request.get("Car_Number")
 
                 try:
-                    res = requests.get(f'http://192.168.15.10:8080/CreateEmployee'
+                    res = requests.get(f'http://{IP_HOST_APACS}:8080/CreateEmployee'
                                        f'?First_Name={first_name}'
                                        f'&Last_Name={last_name}'
                                        f'&Middle_Name={middle_name}'
@@ -490,7 +493,20 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 json_request = request.json
 
-                pass
+                str_inn = json_request.get("INN")
+                str_fid = json_request.get("FID")
+
+                try:
+                    res = requests.delete(f'http://{IP_HOST_APACS}:8080/DeleteEmployee'
+                                       f'?INN={str_inn}'
+                                       f'&FID={str_fid}')
+
+                    json_create = res.json()
+
+                except Exception as ex:
+                    logger.add_log(f"ERROR\tDoDeleteEmployee ошибка обращения к интерфейсу Apacs3000: {ex}")
+                    json_replay["RESULT"] = "ERROR"
+                    json_replay["DESC"] = "Ошибка связи с БД Apacs"
 
             else:
                 # Если в запросе нет Json данных
