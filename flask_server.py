@@ -435,7 +435,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 first_name = json_request.get("First_Name")
                 last_name = json_request.get("Last_Name")
                 middle_name = json_request.get("Middle_Name")
-                str_inn = json_request.get("INN")
+                str_inn = json_request.get("inn")
                 car_number = json_request.get("Car_Number")
 
                 try:
@@ -473,7 +473,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoDeleteEmployee', methods=['POST'])   # TODO удалить сотрудника
+    @app.route('/DoDeleteEmployee', methods=['POST'])
     def delete_employee():
         """ Удаляет сотрудника из БД """
 
@@ -493,18 +493,29 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 json_request = request.json
 
-                str_inn = json_request.get("INN")
-                str_fid = json_request.get("FID")
+                str_inn = json_request.get("inn")
+                str_fid = json_request.get("id")
 
                 try:
                     res = requests.delete(f'http://{IP_HOST_APACS}:8080/DeleteEmployee'
                                        f'?INN={str_inn}'
                                        f'&FID={str_fid}')
 
-                    json_create = res.json()
+                    try:
+                        json_create = res.json()
+
+                        if json_create['RESULT'] == "ERROR":
+                            json_replay["RESULT"] = "ERROR"
+                            json_replay["DESC"] = json_create["DESC"]
+                            json_replay['DATA'] = json_create["DATA"]
+
+                    except Exception as ex:
+                        logger.add_log(f"ERROR\tDoDeleteEmployee Ошибка обращения к интерфейсу Apacs3000: {ex}")
+                        json_replay["RESULT"] = "ERROR"
+                        json_replay["DESC"] = "Ошибка связи с БД Apacs"
 
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tDoDeleteEmployee ошибка обращения к интерфейсу Apacs3000: {ex}")
+                    logger.add_log(f"ERROR\tDoDeleteEmployee Ошибка обращения к интерфейсу Apacs3000: {ex}")
                     json_replay["RESULT"] = "ERROR"
                     json_replay["DESC"] = "Ошибка связи с БД Apacs"
 
