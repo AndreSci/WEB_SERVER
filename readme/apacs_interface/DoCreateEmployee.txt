@@ -1,0 +1,20 @@
+
+Вызов - http://127.0.0.1:8066/DoCreateEmployee
+(POST)
+
+json данные
+{
+    "First_Name":       (Имя)
+    "Last_Name":        (Фамилия)
+    "inn":              (ИНН компании) - str()
+
+    Возможные поля
+    "Middle_Name":      (Отчество)
+    "Car_Number":       (номер авто)
+}
+
+отвечает json
+{"RESULT": "SUCCESS\ERROR", "DESC": "", "DATA": ""}
+
+SUCCESS     без описания
+ERROR       описание ошибки в DESC, так же может быть DATA

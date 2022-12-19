@@ -1,0 +1,16 @@
+
+Вызов - http://127.0.0.1:8066/DoDeleteEmployee
+(POST)
+
+json данные
+{
+    "id":       (ID сотрудника) - int()
+    "inn":      (ИНН компании) - str()
+}
+
+отвечает json
+{"RESULT": "SUCCESS\ERROR\WARNING", "DESC": "", "DATA": ""}
+
+SUCCESS     без описания
+ERROR       описание ошибки в DESC, так же может быть DATA
+WARNING     случай когда удалился сотрудник из БД, но не был деактивирован пропуск. Описание в DESC и DATA

@@ -287,9 +287,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             try:
                 res_json = request.json
 
-                con_helper = BSHelper(set_ini)
-
                 # Отправляем запрос на удаление данных сотрудника
+                con_helper = BSHelper(set_ini)
                 res_base_helper = con_helper.deactivate_person_apacsid(res_json, logger)
                 result = res_base_helper.get("RESULT")
 
@@ -414,7 +413,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/DoCreateEmployee', methods=['POST'])
     def create_employee():
-        """ Добавляет сотрудника в БД и отправляет смс если номер указан """
+        """ Добавляет сотрудника в БД Apacs3000 """
 
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
@@ -437,6 +436,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 middle_name = json_request.get("Middle_Name")
                 str_inn = json_request.get("inn")
                 car_number = json_request.get("Car_Number")
+
+                if not middle_name:
+                    middle_name = ''
+
+                if not car_number:
+                    car_number = ''
+                else:
+                    car_number = str(car_number).upper().replace(' ', '')
 
                 try:
                     res = requests.get(f'http://{IP_HOST_APACS}:8080/CreateEmployee'
@@ -508,6 +515,17 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                             json_replay["RESULT"] = "ERROR"
                             json_replay["DESC"] = json_create["DESC"]
                             json_replay['DATA'] = json_create["DATA"]
+                        else:
+                            # Отправляем запрос на удаление данных сотрудника
+                            con_helper = BSHelper(set_ini)
+                            res_base_helper = con_helper.deactivate_person_apacsid({"id": str_fid}, logger)
+                            result = res_base_helper.get("RESULT")
+
+                            if result == "ERROR":
+                                json_replay["RESULT"] = "WARNING"
+                                json_replay["DESC"] = "Сотрудник успешно удалён. " \
+                                                      "Не удалось деактивировать пропуск сотрудника"
+                                json_replay['DATA'] = res_base_helper
 
                     except Exception as ex:
                         logger.add_log(f"ERROR\tDoDeleteEmployee Ошибка обращения к интерфейсу Apacs3000: {ex}")
