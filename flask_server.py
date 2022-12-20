@@ -579,10 +579,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/GetBlockCar', methods=['GET'])     # TODO получать информацию блока авто для личного кабинета
+    @app.route('/GetBlockCar', methods=['GET'])
     def get_block_car():
         """ Получает информацию о возможности открытия пропусков на авто """
-
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
@@ -594,61 +593,20 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            json_request = dict()
-
-            # Проверяем запрос на Json
+            # Проверяем наличие Json
             if request.is_json:
+
                 json_request = request.json
+
+                str_inn = json_request.get("inn")
+                str_fid = json_request.get("id")
+
+
             else:
-                json_request['FAccountID'] = request.args.get("FAccountID")
-                json_request['FINN'] = request.args.get("FINN")
-
-            if not json_request['FAccountID']:
-                logger.add_log(f"ERROR\tDoGetCardHolders - Не удалось прочитать args/data из request")
-                json_replay["DESC"] = "Ошибка. Не удалось прочитать args/data из request."
-            else:
-
-                account_id = json_request.get("FAccountID")
-                finn = json_request.get("FINN")
-
-                con_db = CardHoldersDB()
-
-                # Запрос в БД sac3
-                db_sac3 = CardHoldersDB.get_sac3(account_id, logger)
-
-                if db_sac3["status"]:
-
-                    # Запрос в БД FIREBIRD
-                    db_fdb = con_db.get_fdb(finn, logger)
-
-                    json_replay["DESC"] = db_fdb["desc"]
-
-                    if db_fdb["status"]:
-                        json_replay["RESULT"] = "SUCCESS"
-                        # json_replay["DATA"] = db_fdb["data"]
-
-                        list_id = list()
-
-                        for it in db_fdb['data']:
-                            list_id.append(it["fid"])
-
-                        face_db = con_db.get_with_face(list_id, logger)
-
-                        ret_list_id = list()
-
-                        # Перезаписываем в новый лист данные пользователей с полем isphoto
-                        for it in db_fdb["data"]:
-                            if it["fid"] in str(face_db['data']):
-                                it['isphoto'] = 1
-                            else:
-                                it['isphoto'] = 0
-
-                            ret_list_id.append(it)
-
-                        json_replay["DATA"] = ret_list_id
-
-                else:
-                    json_replay["DESC"] = db_sac3["desc"]
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tGetBlockCar ошибка чтения Json: В запросе нет Json")
+                json_replay["RESULT"] = "ERROR"
+                json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)
 
