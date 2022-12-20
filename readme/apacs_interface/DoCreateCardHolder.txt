@@ -1,5 +1,5 @@
 
-Вызов - http://127.0.0.1:8066/DoCreateEmployee
+Вызов - http://127.0.0.1:8066/DoCreateCardHolder
 (POST)
 
 json данные
@@ -7,6 +7,7 @@ json данные
     "First_Name":       (Имя)
     "Last_Name":        (Фамилия)
     "inn":              (ИНН компании) - str()
+    "img64":            (base64 jpg, png)
 
     Возможные поля
     "Middle_Name":      (Отчество)

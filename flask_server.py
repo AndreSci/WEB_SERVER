@@ -1,3 +1,5 @@
+""" Made by Andrew Terleckii (2022\12\19) """
+
 from flask import Flask, render_template, request, make_response, jsonify
 import requests
 import codecs
@@ -215,6 +217,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 con_helper = BSHelper(set_ini)
 
+                # TODO удалить 2 лога
                 # Отправляем запрос на получение данных сотрудника
                 logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучен json: {res_json.get('id')}")
                 res_base_helper = con_helper.get_card_holder(res_json, logger)
@@ -238,7 +241,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                         # отменяем заявку в базе через base_helper
                         con_helper.deactivate_person(res_json, logger)
-
+                        logger.add_log(f"WARNING\tDoAddEmployeePhoto\tОтмена пропуска в BaseHelper "
+                                       f"из-за ошибки на Драйвере распознания лиц")
                 if result == "EXCEPTION":
                     pass
                 else:
@@ -300,10 +304,11 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     connect_driver = ConDriver(set_ini)
                     res_driver = connect_driver.delete_person(res_json, logger)
 
-                    if res_driver == "SUCCESS":
+                    if res_driver['RESULT'] == "SUCCESS":
                         json_replay["RESULT"] = "SUCCESS"
                         json_replay["DESC"] = f"Пропуск успешно удалена."
-                        logger.add_log(f"SUCCESS\tDoDeletePhoto\tПропуск для id: {res_json['id']} успешно удален.")
+                    else:
+                        json_replay['DESC'] = res_driver['DESC']
 
                 else:
                     logger.add_log(f"ERROR\tDoDeletePhoto\tBaseHelper DESC: {res_base_helper.get('DESC')}, "
@@ -411,8 +416,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # EMPLOYEE ----
 
-    @app.route('/DoCreateEmployee', methods=['POST'])
-    def create_employee():
+    @app.route('/DoCreateCardHolder', methods=['POST'])
+    def create_card_holder():
         """ Добавляет сотрудника в БД Apacs3000 """
 
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
@@ -436,6 +441,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 middle_name = json_request.get("Middle_Name")
                 str_inn = json_request.get("inn")
                 car_number = json_request.get("Car_Number")
+                photo_img64 = json_request.get("img64")
 
                 if not middle_name:
                     middle_name = ''
@@ -456,8 +462,28 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_create = res.json()
 
                     if json_create["RESULT"] == "SUCCESS":
-                        json_replay['DESC'] = "Успешно создан сотрудник"
-                        logger.add_log(f"EVENT\tDoCreateEmployee Успешно создан сотрудник для ИНН{str_inn}")
+
+                        sys_addr_id = json_create['DATA']['sysAddrID']
+                        sys_addr_id = sys_addr_id[8:]
+
+                        json_empl = dict()
+
+                        json_empl['id'] = int(sys_addr_id, 16)
+                        json_empl['img64'] = photo_img64
+
+                        res_add_photo = requests.post("http://127.0.0.1:8066/DoAddEmployeePhoto", json=json_empl)
+
+                        if res_add_photo.status_code == 200:
+                            res_add_photo = res_add_photo.json()
+
+                            if res_add_photo['RESULT'] == "SUCCESS":
+
+                                json_replay['DESC'] = "Успешно создан сотрудник"
+                                logger.add_log(f"EVENT\tDoCreateEmployee Успешно создан сотрудник для ИНН{str_inn}")
+                            else:
+                                json_replay['RESULT'] = "WARNING"
+                                json_replay['DESC'] = "Успешно создан сотрудник в БД. " \
+                                                      f"Ошибка: {res_add_photo['DESC']}"
                     else:
                         logger.add_log(f"WARNING\tDoCreateEmployee "
                                        f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
@@ -480,9 +506,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DoDeleteEmployee', methods=['POST'])
-    def delete_employee():
+    @app.route('/DoDeleteCardHolder', methods=['POST'])
+    def delete_card_holder():
         """ Удаляет сотрудника из БД """
+
+        # создаем и подключаемся к драйверу Коли
+        # connect_driver = ConDriver(set_ini)
+        # res_driver = connect_driver.delete_person({"id": 2450}, logger)
 
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
@@ -517,15 +547,19 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                             json_replay['DATA'] = json_create["DATA"]
                         else:
                             # Отправляем запрос на удаление данных сотрудника
-                            con_helper = BSHelper(set_ini)
-                            res_base_helper = con_helper.deactivate_person_apacsid({"id": str_fid}, logger)
-                            result = res_base_helper.get("RESULT")
 
-                            if result == "ERROR":
+                            result = requests.post("http://127.0.0.1:8066/DoDeletePhoto", json=json_request)
+                            result = result.json()
+
+                            # con_helper = BSHelper(set_ini)
+                            # res_base_helper = con_helper.deactivate_person_apacsid({"id": str_fid}, logger)
+                            # result = res_base_helper.get("RESULT")
+
+                            if result['RESULT'] == "ERROR":
                                 json_replay["RESULT"] = "WARNING"
                                 json_replay["DESC"] = "Сотрудник успешно удалён. " \
                                                       "Не удалось деактивировать пропуск сотрудника"
-                                json_replay['DATA'] = res_base_helper
+                                json_replay['DATA'] = result
 
                     except Exception as ex:
                         logger.add_log(f"ERROR\tDoDeleteEmployee Ошибка обращения к интерфейсу Apacs3000: {ex}")

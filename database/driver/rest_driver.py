@@ -77,18 +77,19 @@ class ConDriver:
 
         return ret_value
 
-    def delete_person(self, json_data: json, logger: Logger) -> str:
-        ret_value = "ERROR"
+    def delete_person(self, json_data: json, logger: Logger) -> dict:
+        ret_value = {"RESULT": "ERROR", "DATA": dict(), "DESC": ""}
         try:
             result = requests.post(f"http://{self.settings_ini['dr_host']}:"
                                    f"{self.settings_ini['dr_port']}/deletePerson",
                                    data=json_data)
 
             json_data = result.json()
-            ret_value = json_data["RESULT"]
+            ret_value['RESULT'] = json_data["RESULT"]
 
             if ret_value == "ERROR":
                 logger.add_log(f"ERROR\tОшибка на драйвере - {json_data.get('DATA')}")
+                ret_value['DESC'] = json_data["DATA"]['msg']
 
         except Exception as ex:
             logger.add_log(f"ERROR\tИсключение вызвало связь с Драйвером - {ex}")

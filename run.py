@@ -1,3 +1,5 @@
+""" Made by Andrew Terleckii (2022\12\19) """
+
 from misc.util import SettingsIni
 from misc.logger import Logger
 from flask_server import web_flask
