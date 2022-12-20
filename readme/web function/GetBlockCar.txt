@@ -1,0 +1,16 @@
+
+http://127.0.0.1:8066/GetBlockCar
+(GET)
+
+json данные
+{
+    "id":       (FID компании)
+    "inn":      (ИНН компании) - str()
+}
+
+отвечает json
+{"RESULT": "SUCCESS\BLOCK\ERROR", "DESC": "", "DATA": ""}
+
+SUCCESS     разрешено
+BLOCK       запрещено
+ERROR       описание ошибки в DESC, так же может быть DATA

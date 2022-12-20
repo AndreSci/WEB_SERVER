@@ -27,10 +27,11 @@ class CompanyDB:
                     if request_res[0]['FBlockCar'] == 0:
                         ret_value["RESULT"] = "SUCCESS"
                     else:
-                        request_res["RESULT"] = "WARNING"
+                        request_res["RESULT"] = "BLOCK"
                         request_res["DESC"] = "Учетная запись заблокирована для выдачи пропусков на автомобиль"
 
-                    ret_value['DATA'] = {'FBlockCar': request_res[0]['FBlockCar']}
+                    ret_value['DATA'] = {'FBlockCar': request_res[0]['FBlockCar'],
+                                         "FID": request_res[0]['FID']}
                 else:
                     ret_value["DESC"] = f"Не удалось найти данные для ID: {account_id}"
 
