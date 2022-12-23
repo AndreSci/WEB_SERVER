@@ -1,0 +1,13 @@
+
+Вызов - http://127.0.0.1:8066/DoAddPhoto
+(POST)
+
+json
+{
+    "id": 11111,
+    "img64": ""     (строка кодировки base64, max-size 1080px, файл должен быть менее 2мб.)
+}
+
+
+отвечает json
+{"RESULT": "SUCCESS\ERROR", "DESC": "", "DATA": ""}

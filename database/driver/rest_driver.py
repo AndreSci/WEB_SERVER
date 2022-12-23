@@ -8,16 +8,15 @@ class ConDriver:
     def __init__(self, set_ini):
         self.settings_ini = set_ini
 
-    def add_face(self, json_data: json, logger: Logger) -> str:
-        ret_value = "ERROR"
+    def add_face(self, json_data: json, logger: Logger) -> dict:
+        ret_value = {"RESULT": "ERROR", "DATA": dict(), "DESC": "Ошибка работы с драйвером"}
         try:
             result = requests.post(f"http://{self.settings_ini['dr_host']}:{self.settings_ini['dr_port']}/addFace",
                                    data=json_data)
 
-            json_data = result.json()
-            ret_value = json_data["RESULT"]
+            ret_value = result.json()
 
-            if ret_value == "ERROR":
+            if ret_value['RESULT'] == "ERROR":
                 logger.add_log(f"ERROR\tОшибка на драйвере - {json_data['DATA']}")
 
         except Exception as ex:

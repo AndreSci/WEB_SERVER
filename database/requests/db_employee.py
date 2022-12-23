@@ -4,11 +4,11 @@ from database.db_connection import connect_db
 
 class EmployeeDB:
     @staticmethod
-    def create_employee(logger: Logger):
-        """ Создает постоянный пропуск на сотрудника """
+    def create_employee(str_inn, str_fid, logger: Logger):
+        """ Создает сотрудника """
         pass
 
     @staticmethod
-    def delete_employee(logger: Logger):
-        """ Удаляет постоянный пропуск сотрудника из двух баз """
+    def delete_employee(str_inn, str_fid, logger: Logger):
+        """ Удаляет сотрудника """
         pass

@@ -16,8 +16,10 @@ class CompanyDB:
 
             with connection.cursor() as cur:
 
-                cur.execute(f"select * from sac3.taccount "
+                cur.execute(f"select * from sac3.taccount, sac3.tcompany "
+                                f"where FCompanyID = tcompany.FID "
                                 f"and taccount.FID = {account_id} "
+                                f"and tcompany.FActivity = 1 "
                                 f"and taccount.FActivity = 1")
 
                 request_res = cur.fetchall()
@@ -25,9 +27,9 @@ class CompanyDB:
                 if len(request_res) > 0:
 
                     if request_res[0]['FBlockCar'] == 0:
-                        ret_value["RESULT"] = "SUCCESS"
+                        ret_value["RESULT"] = "ALLOWED"
                     else:
-                        request_res["RESULT"] = "BLOCK"
+                        request_res["RESULT"] = "BANNED"
                         request_res["DESC"] = "Учетная запись заблокирована для выдачи пропусков на автомобиль"
 
                     ret_value['DATA'] = {'FBlockCar': request_res[0]['FBlockCar'],
@@ -42,4 +44,3 @@ class CompanyDB:
             logger.add_log(f"CompanyDB.get_block_status - \tERROR\tОшибка работы с базой данных: {ex}")
 
         return ret_value
-

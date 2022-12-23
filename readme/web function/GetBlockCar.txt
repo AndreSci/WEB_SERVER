@@ -9,8 +9,8 @@ json данные
 }
 
 отвечает json
-{"RESULT": "SUCCESS\BLOCK\ERROR", "DESC": "", "DATA": ""}
+{"RESULT": "ALLOWED\BANNED\ERROR", "DESC": "", "DATA": ""}
 
-SUCCESS     разрешено
-BLOCK       запрещено
+ALLOWED     разрешено
+BANNED      запрещено
 ERROR       описание ошибки в DESC, так же может быть DATA

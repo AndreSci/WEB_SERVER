@@ -2,7 +2,6 @@
 
 from flask import Flask, render_template, request, make_response, jsonify
 import requests
-import codecs
 
 from misc.util import SettingsIni
 from misc.logger import Logger
@@ -13,6 +12,7 @@ from misc.block_logs import block_flask_logs
 
 from database.requests.db_create_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
+from database.requests.db_company import CompanyDB
 from database.driver.rest_driver import ConDriver
 from database.base_helper.helper import BSHelper
 
@@ -217,20 +217,19 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 con_helper = BSHelper(set_ini)
 
-                # TODO удалить 2 лога
                 # Отправляем запрос на получение данных сотрудника
-                logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучен json: {res_json.get('id')}")
+                # logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучен json: {res_json.get('id')}")
                 res_base_helper = con_helper.get_card_holder(res_json, logger)
                 result = res_base_helper.get("RESULT")
 
-                logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПосле BaseHelper "
-                               f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}")
+                # logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПосле BaseHelper "
+                #             f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}")
 
                 if result == "SUCCESS":
 
                     res_json["id"] = res_base_helper["DATA"].get("id")
                     res_json["name"] = res_base_helper["DATA"].get("name")
-                    # создаем и подключаемся к драйверу Коли
+                    # создаем и подключаемся к драйверу Распознания лиц
                     connect_driver = ConDriver(set_ini)
 
                     res_driver = connect_driver.add_person_with_face(res_json, logger)
@@ -389,7 +388,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoOnPhoto запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoAddPhoto запрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -402,15 +401,15 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 connect_driver = ConDriver(set_ini)
                 result = connect_driver.add_face(res_json, logger)
 
-                if result == "SUCCESS":
+                if result['RESULT'] == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
                     json_replay["DESC"] = f"Фотография успешно добавлена."
                 else:
-                    json_replay["DESC"] = f"Драйвер ответил ошибкой."
+                    json_replay = result
 
             except Exception as ex:
                 json_replay['DESC'] = "Ошибка чтения Json из запроса"
-                logger.add_log(f"ERROR\tDoOnPhoto Исключение вызвало чтение Json из запроса {ex}")
+                logger.add_log(f"ERROR\tDoAddPhoto Исключение вызвало чтение Json из запроса {ex}")
 
         return jsonify(json_replay)
 
@@ -418,7 +417,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/DoCreateCardHolder', methods=['POST'])
     def create_card_holder():
-        """ Добавляет сотрудника в БД Apacs3000 """
+        """ Добавляет сотрудника в БД Apacs3000,\n
+        запрашивает добавление пропуска по лицу через requests в DoAddEmployeePhoto"""
 
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
@@ -441,7 +441,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 middle_name = json_request.get("Middle_Name")
                 str_inn = json_request.get("inn")
                 car_number = json_request.get("Car_Number")
-                photo_img64 = json_request.get("img64")
+                # photo_img64 = json_request.get("img64")
 
                 if not middle_name:
                     middle_name = ''
@@ -469,7 +469,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         json_empl = dict()
 
                         json_empl['id'] = int(sys_addr_id, 16)
-                        json_empl['img64'] = photo_img64
+                        json_empl['img64'] = json_request.get("img64")
 
                         res_add_photo = requests.post("http://127.0.0.1:8066/DoAddEmployeePhoto", json=json_empl)
 
@@ -535,8 +535,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 try:
                     res = requests.delete(f'http://{IP_HOST_APACS}:8080/DeleteEmployee'
-                                       f'?INN={str_inn}'
-                                       f'&FID={str_fid}')
+                                           f'?INN={str_inn}'
+                                           f'&FID={str_fid}')
 
                     try:
                         json_create = res.json()
@@ -598,9 +598,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 json_request = request.json
 
-                str_inn = json_request.get("inn")
-                str_fid = json_request.get("id")
+                com_fid = json_request.get("id")
 
+                json_replay = CompanyDB.get_block_car(com_fid, logger)
 
             else:
                 # Если в запросе нет Json данных
