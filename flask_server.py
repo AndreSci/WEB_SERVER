@@ -423,7 +423,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoCreateCardHolder запрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -479,13 +479,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                             if res_add_photo['RESULT'] == "SUCCESS":
 
                                 json_replay['DESC'] = "Успешно создан сотрудник"
-                                logger.add_log(f"EVENT\tDoCreateEmployee Успешно создан сотрудник для ИНН{str_inn}")
+                                logger.add_log(f"EVENT\tDoCreateCardHolder Успешно создан сотрудник для ИНН{str_inn}")
                             else:
                                 json_replay['RESULT'] = "WARNING"
                                 json_replay['DESC'] = "Успешно создан сотрудник в БД. " \
                                                       f"Ошибка: {res_add_photo['DESC']}"
                     else:
-                        logger.add_log(f"WARNING\tDoCreateEmployee "
+                        logger.add_log(f"WARNING\tDoCreateCardHolder "
                                        f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
                                        f"JSON: {json_request}")
 
@@ -494,13 +494,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         json_replay['DESC'] = json_create["DESC"]
 
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tDoCreateEmployee ошибка обращения к интерфейсу Apacs3000: {ex}")
+                    logger.add_log(f"ERROR\tDoCreateCardHolder ошибка обращения к интерфейсу Apacs3000: {ex}")
                     json_replay["RESULT"] = "ERROR"
                     json_replay["DESC"] = "Ошибка связи с БД Apacs"
 
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tDoCreateEmployee ошибка чтения Json: В запросе нет Json")
+                logger.add_log(f"ERROR\tDoCreateCardHolder ошибка чтения Json: В запросе нет Json")
                 json_replay["RESULT"] = "ERROR"
                 json_replay["DESC"] = ERROR_READ_JSON
 
@@ -517,7 +517,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoDeleteEmployee запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoDeleteCardHolder запрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -562,18 +562,18 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                                 json_replay['DATA'] = result
 
                     except Exception as ex:
-                        logger.add_log(f"ERROR\tDoDeleteEmployee Ошибка обращения к интерфейсу Apacs3000: {ex}")
+                        logger.add_log(f"ERROR\tDoDeleteCardHolder Ошибка обращения к интерфейсу Apacs3000: {ex}")
                         json_replay["RESULT"] = "ERROR"
                         json_replay["DESC"] = "Ошибка связи с БД Apacs"
 
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tDoDeleteEmployee Ошибка обращения к интерфейсу Apacs3000: {ex}")
+                    logger.add_log(f"ERROR\tDoDeleteCardHolder Ошибка обращения к интерфейсу Apacs3000: {ex}")
                     json_replay["RESULT"] = "ERROR"
                     json_replay["DESC"] = "Ошибка связи с БД Apacs"
 
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tDoDeleteEmployee ошибка чтения Json: В запросе нет Json")
+                logger.add_log(f"ERROR\tDoDeleteCardHolder ошибка чтения Json: В запросе нет Json")
                 json_replay["RESULT"] = "ERROR"
                 json_replay["DESC"] = ERROR_READ_JSON
 

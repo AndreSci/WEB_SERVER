@@ -101,6 +101,7 @@ class CardHoldersDB:
                                 "where FTag = 'Employee' "
                                 "and FActivity = 1 "
                                 f"and FRemoteID in ({sql_list})")
+
                 request_activity = cur.fetchall()
 
                 if len(request_activity) == 0:
