@@ -1,6 +1,6 @@
 """ Made by Andrew Terleckii (2022\12\19) """
 
-from flask import Flask, render_template, request, make_response, jsonify
+from flask import Flask, request, jsonify
 import requests
 
 from misc.util import SettingsIni
@@ -8,7 +8,7 @@ from misc.logger import Logger
 from misc.allow_ip import AllowedIP
 from misc.send_sms import SendSMS
 from misc.car_number_test import NormalizeCar
-from misc.block_logs import block_flask_logs
+# from misc.block_logs import block_flask_logs
 
 from database.requests.db_create_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
@@ -23,6 +23,7 @@ ERROR_ON_SERVER = 'server_error'
 
 # IP_HOST_APACS = '192.168.15.10'
 IP_HOST_APACS = '127.0.0.1'
+PORT_APACS = '8080'
 
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
@@ -452,7 +453,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     car_number = str(car_number).upper().replace(' ', '')
 
                 try:
-                    res = requests.get(f'http://{IP_HOST_APACS}:8080/CreateEmployee'
+                    res = requests.get(f'http://{set_ini["host_apacs_i"]}:{set_ini["port_apacs_i"]}/CreateEmployee'
                                        f'?First_Name={first_name}'
                                        f'&Last_Name={last_name}'
                                        f'&Middle_Name={middle_name}'
@@ -534,7 +535,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 str_fid = json_request.get("id")
 
                 try:
-                    res = requests.delete(f'http://{IP_HOST_APACS}:8080/DeleteEmployee'
+                    res = requests.delete(f'http://{set_ini["host_apacs_i"]}:{set_ini["port_apacs_i"]}/DeleteEmployee'
                                            f'?INN={str_inn}'
                                            f'&FID={str_fid}')
 

@@ -22,7 +22,7 @@ class BSHelper:
             result["DESC"] = res_base_helper.get("Description")
             result["DATA"] = res_base_helper.get('Data')
         except Exception as ex:
-            logger.add_log(f"ERROR\tBSHelper.get_card_holder\t1: error_with_base_helper: {ex}")
+            logger.add_log(f"ERROR\tBSHelper.get_card_holder - error_with_base_helper: {ex}")
             result["DESC"] = "error_with_base_helper"
             result["RESULT"] = "EXCEPTION"
 
@@ -43,7 +43,7 @@ class BSHelper:
             result["DATA"] = res_base_helper.get('Data')
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tBSHelper.deactivate_person\t2: error_with_base_helper: {ex}")
+            logger.add_log(f"ERROR\tBSHelper.deactivate_person - error_with_base_helper: {ex}")
             result["DESC"] = "error_with_base_helper"
             result["RESULT"] = "EXCEPTION"
 
@@ -65,7 +65,7 @@ class BSHelper:
             result['DATA'] = res_base_helper.get("Data")
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tBSHelper.deactivate_person_apacsid\t2: error_with_base_helper: {ex}")
+            logger.add_log(f"ERROR\tBSHelper.deactivate_person_apacsid - error_with_base_helper: {ex}")
             result["DESC"] = "error_with_base_helper"
             result["RESULT"] = "EXCEPTION"
 

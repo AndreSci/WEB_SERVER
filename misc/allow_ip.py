@@ -28,9 +28,9 @@ class AllowedIP:
                         self.allow_ip[key] = int(val)
 
                 except KeyError as ex:
-                    logger.add_log(f"ERROR\tОшибка по ключу словаря - {ex}")
+                    logger.add_log(f"ERROR\tAllowedIP.read_file - Ошибка по ключу словаря: {ex}")
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tException - {ex}")
+                    logger.add_log(f"ERROR\tAllowedIP.read_file - Exception:{ex}")
 
     def find_ip(self, user_ip: str, logger: Logger, activity_lvl=1) -> bool:
         """ Функция поиска IP в словаре, если нет, \n
@@ -68,7 +68,7 @@ class AllowedIP:
 
                     ret_value = True
 
-                    logger.add_log(f"SUCCESS\tIP - {new_ip} добавлен в систему со значением {activity} ")
+                    logger.add_log(f"EVENT\tAllowedIP.add_ip - {new_ip} добавлен в систему со значением {activity} ")
                 except Exception as ex:
                     logger.add_log(f"ERROR\tОшибка открытия или записи в файл - {ex}")
 

@@ -32,6 +32,9 @@ class SettingsIni:
                 # helper
                 self.settings_ini["hl_host"] = self.settings_file["HELPER"]["HOST"]
                 self.settings_ini["hl_port"] = self.settings_file["HELPER"]["PORT"]
+                # Apacs interface
+                self.settings_ini["host_apacs_i"] = self.settings_file['APACS_INTERFACE']['HOST']
+                self.settings_ini['port_apacs_i'] = self.settings_file['APACS_INTERFACE']['PORT']
 
                 ret_value["result"] = True
 

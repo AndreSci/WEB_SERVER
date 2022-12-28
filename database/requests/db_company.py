@@ -41,6 +41,6 @@ class CompanyDB:
 
         except Exception as ex:
             ret_value["DESC"] = "Ошибка работы с БД"
-            logger.add_log(f"CompanyDB.get_block_status - \tERROR\tОшибка работы с базой данных: {ex}")
+            logger.add_log(f"ERROR\tCompanyDB.get_block_status - Ошибка работы с базой данных: {ex}")
 
         return ret_value
