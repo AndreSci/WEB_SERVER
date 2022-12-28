@@ -472,7 +472,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         json_empl['id'] = int(sys_addr_id, 16)
                         json_empl['img64'] = json_request.get("img64")
 
-                        res_add_photo = requests.post("http://127.0.0.1:8066/DoAddEmployeePhoto", json=json_empl)
+                        res_add_photo = requests.post(f"http://127.0.0.1:{set_ini['port']}/DoAddEmployeePhoto",
+                                                      json=json_empl)
 
                         if res_add_photo.status_code == 200:
                             res_add_photo = res_add_photo.json()
@@ -549,7 +550,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         else:
                             # Отправляем запрос на удаление данных сотрудника
 
-                            result = requests.post("http://127.0.0.1:8066/DoDeletePhoto", json=json_request)
+                            result = requests.post(f"http://127.0.0.1:{set_ini['port']}/DoDeletePhoto", json=json_request)
                             result = result.json()
 
                             # con_helper = BSHelper(set_ini)
