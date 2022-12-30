@@ -15,7 +15,8 @@ json данные
 }
 
 отвечает json
-{"RESULT": "SUCCESS\ERROR", "DESC": "", "DATA": ""}
+{"RESULT": "SUCCESS\ERROR\WARNING", "DESC": "", "DATA": ""}
 
-SUCCESS     без описания
+SUCCESS     DESC: Успешно создан сотрудник  DATA: { "id": 01234 }
+WARNING     DESC: "Успешно создан сотрудник в БД. (Описание ошибки)"  DATA: { "id": 01234 }  (Случай когда не удалось добавить фото или открыть пропуск)
 ERROR       описание ошибки в DESC, так же может быть DATA

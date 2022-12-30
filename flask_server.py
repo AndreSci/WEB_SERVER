@@ -464,6 +464,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                     if json_create["RESULT"] == "SUCCESS":
 
+                        # Получаем id пользователя из системного адреса (HEX) в (DEC)
                         sys_addr_id = json_create['DATA']['sysAddrID']
                         sys_addr_id = sys_addr_id[8:]
 
@@ -486,6 +487,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                                 json_replay['RESULT'] = "WARNING"
                                 json_replay['DESC'] = "Успешно создан сотрудник в БД. " \
                                                       f"Ошибка: {res_add_photo['DESC']}"
+
+                            json_replay['DATA'] = {'id': json_empl['id']}
                     else:
                         logger.add_log(f"WARNING\tDoCreateCardHolder "
                                        f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
