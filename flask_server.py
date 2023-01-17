@@ -587,30 +587,26 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     @app.route('/GetBlockCar', methods=['GET'])
     def get_block_car():
         """ Получает информацию о возможности открытия пропусков на авто """
-        json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tGetBlockCar запрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
-            json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
-            if request.is_json:
-
+            try:
                 json_request = request.json
 
                 com_fid = json_request.get("id")
-
+                # inn = json_request.get("inn") убран из-за лишней нагрузки
                 json_replay = CompanyDB.get_block_car(com_fid, logger)
 
-            else:
+            except Exception as ex:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetBlockCar ошибка чтения Json: В запросе нет Json")
-                json_replay["RESULT"] = "ERROR"
+                logger.add_log(f"ERROR\tGetBlockCar ошибка чтения Json: В запросе нет {ex}")
                 json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)
