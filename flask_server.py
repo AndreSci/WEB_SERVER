@@ -94,6 +94,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             if request.is_json:
 
                 json_request = request.json
+
+                logger.add_log(f"EVENT\tDoCreateGuest\tПолучены данные: ({json_request})", print_it=False)
+
                 # Проверяем номер авто
                 car_number = json_request.get("FCarNumber")
 
@@ -158,6 +161,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 account_id = json_request.get("FAccountID")
                 finn = json_request.get("FINN")
 
+                logger.add_log(f"EVENT\tDoGetCardHolders\tПолучены данные: ("
+                               f"FINN: {finn} "
+                               f"FAccountID: {account_id})", print_it=False)
+
                 con_db = CardHoldersDB()
 
                 # Запрос в БД sac3
@@ -215,16 +222,17 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             # Проверяем наличие Json в запросе
             if request.is_json:
                 res_json = request.json
+                logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучены данные: (id: {res_json.get('id')})")
 
                 con_helper = BSHelper(set_ini)
 
                 # Отправляем запрос на получение данных сотрудника
-                # logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучен json: {res_json.get('id')}")
                 res_base_helper = con_helper.get_card_holder(res_json, logger)
                 result = res_base_helper.get("RESULT")
 
-                # logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПосле BaseHelper "
-                #             f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}")
+                logger.add_log(f"EVENT\tDoAddEmployeePhoto\tПосле BaseHelper "
+                                f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}",
+                                print_it=False)
 
                 if result == "SUCCESS":
 
@@ -290,6 +298,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         else:
             try:
                 res_json = request.json
+
+                logger.add_log(f"EVENT\tDoDeletePhoto\tПолучены данные: ("
+                               f"id: {res_json.get('id')})")
 
                 # Отправляем запрос на удаление данных сотрудника
                 con_helper = BSHelper(set_ini)
@@ -444,6 +455,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 car_number = json_request.get("Car_Number")
                 # photo_img64 = json_request.get("img64")
 
+                logger.add_log(f"EVENT\tDoCreateCardHolder\tПолучены данные: ("
+                               f"First_Name: {first_name} "
+                               f"Last_Name: {last_name} "
+                               f"Middle_Name: {middle_name} "
+                               f"inn: {str_inn} "
+                               f"Car_Number: {car_number})", print_it=False)
+
                 if not middle_name:
                     middle_name = ''
 
@@ -538,6 +556,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 str_inn = json_request.get("inn")
                 str_fid = json_request.get("id")
 
+                logger.add_log(f"EVENT\tDoDeleteCardHolder\tПолучены данные: ("
+                               f"fid: {str_fid} "
+                               f"inn: {str_inn} ", print_it=False)
+
                 try:
                     res = requests.delete(f'http://{set_ini["host_apacs_i"]}:{set_ini["port_apacs_i"]}/DeleteEmployee'
                                            f'?INN={str_inn}'
@@ -602,6 +624,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 com_fid = json_request.get("id")
                 # inn = json_request.get("inn") убран из-за лишней нагрузки
+
+                logger.add_log(f"EVENT\tGetBlockCar\tПолучены данные: (id: {com_fid})", print_it=False)
+
                 json_replay = CompanyDB.get_block_car(com_fid, logger)
 
             except Exception as ex:

@@ -94,7 +94,8 @@ class CreateGuestDB:
                     ret_value["desc"] = ACCESS_DENIED_REGISTRATION_DENIAL
 
                     logger.add_log(f"WARNING\tCreateGuestDB.add_guest - "
-                                   f"Регистрация заявки отклонена AccountID: {account_id}.")
+                                   f"Регистрация заявки отклонена AccountID: {account_id}. "
+                                   f"Компания/Аккаунт не найден(а) или имеет ограничения.")
 
                 elif len(is_exist) != 0:
                     ret_value["status"] = "WARNING"
