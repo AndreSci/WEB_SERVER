@@ -17,11 +17,13 @@ json
 {"RESULT": "SUCCESS\ERROR", "DESC": "", "DATA": ""}
 
 "DATA" при успешном поиске возвращает список словарей
+"fid" (он же Apacs_id или RemoteID) получает из FireBird
 
 пример:
         {
             "ffirstname": "ИМЯ",
             "fid": "1686",
             "flastname": "ФАМИЛИЯ",
-            "fmiddlename": "ОТЧЕСТВО"
+            "fmiddlename": "ОТЧЕСТВО",
+            'isphoto': 0
         }

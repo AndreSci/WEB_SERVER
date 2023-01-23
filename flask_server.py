@@ -183,6 +183,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                         list_id = list()
 
+                        # создаем список fid для получения списка сотрудников из базы лиц
                         for it in db_fdb['data']:
                             list_id.append(it["fid"])
 
@@ -537,7 +538,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/DoDeleteCardHolder', methods=['POST'])
     def delete_card_holder():
-        """ Удаляет сотрудника из БД """
+        """ Удаляет сотрудника из БД Принимает id он же Apacs_id и inn компании"""
 
         # создаем и подключаемся к драйверу Коли
         # connect_driver = ConDriver(set_ini)
@@ -560,7 +561,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 json_request = request.json
 
                 str_inn = json_request.get("inn")
-                str_fid = json_request.get("id")
+                str_fid = json_request.get("id")    # (он же Apacs_id или RemoteID)
 
                 logger.add_log(f"EVENT\tDoDeleteCardHolder\tПолучены данные: ("
                                f"fid: {str_fid} "
