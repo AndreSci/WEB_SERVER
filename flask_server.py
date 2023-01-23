@@ -50,7 +50,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoAddIp запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoAddIp запрос от ip: {user_ip}", print_it=False)
 
         if not allow_ip.find_ip(user_ip, logger, 2):  # Устанавливаем activity_lvl=2 для проверки уровня доступа
             json_replay["DESC"] = "Ошибка доступа по IP"
@@ -82,7 +82,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -136,7 +136,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         """ Функция возвращает список сотрудников компании """
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoGetCardHolders запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoGetCardHolders запрос от ip: {user_ip}", print_it=False)
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -208,12 +208,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/DoAddEmployeePhoto', methods=['POST'])
     def add_employee_photo():
-        """ Добавляет сотрудника в терминалы с фото лица """
+        """ Добавляет сотрудника с фото лица в терминалы """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoAddEmployeePhoto\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoAddEmployeePhoto\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -234,13 +234,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                                 f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}",
                                 print_it=False)
 
-                if result == "SUCCESS":
+                if result == "SUCCESS" or result == "WARNING":
 
                     res_json["id"] = res_base_helper["DATA"].get("id")
                     res_json["name"] = res_base_helper["DATA"].get("name")
+
                     # создаем и подключаемся к драйверу Распознания лиц
                     connect_driver = ConDriver(set_ini)
-
                     res_driver = connect_driver.add_person_with_face(res_json, logger)
 
                     if res_driver["RESULT"] == "ERROR":
@@ -291,7 +291,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": ERROR_ON_SERVER, "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoDeletePhoto запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoDeletePhoto запрос от ip: {user_ip}", print_it=False)
 
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
@@ -307,7 +307,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 res_base_helper = con_helper.deactivate_person_apacsid(res_json, logger)
                 result = res_base_helper.get("RESULT")
 
-                if result == "SUCCESS":
+                if result == "SUCCESS" or result == "WARNING":
                     res_json["id"] = res_base_helper["DATA"].get("id")
                     res_json["name"] = res_base_helper["DATA"].get("name")
 
@@ -340,7 +340,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoAddGuest запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoAddGuest запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -370,7 +370,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoUpdateGuest запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoUpdateGuest запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -400,7 +400,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoAddPhoto запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoAddPhoto запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -435,7 +435,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoCreateCardHolder запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoCreateCardHolder запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -453,14 +453,20 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 middle_name = json_request.get("Middle_Name")
                 str_inn = json_request.get("inn")
                 car_number = json_request.get("Car_Number")
-                # photo_img64 = json_request.get("img64")
+                photo_img64 = 0
+
+                try:
+                    photo_img64 = len(json_request['img64'])
+                except Exception as ex:
+                    logger.add_log(f"ERROR\tDoCreateCardHolder\tОшибка подсчета размера фотографии img64: {ex}")
 
                 logger.add_log(f"EVENT\tDoCreateCardHolder\tПолучены данные: ("
                                f"First_Name: {first_name} "
                                f"Last_Name: {last_name} "
                                f"Middle_Name: {middle_name} "
                                f"inn: {str_inn} "
-                               f"Car_Number: {car_number})", print_it=False)
+                               f"Car_Number: {car_number} "
+                               f"img64_size: {photo_img64})", print_it=False)
 
                 if not middle_name:
                     middle_name = ''
@@ -540,7 +546,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoDeleteCardHolder запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tDoDeleteCardHolder запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -558,7 +564,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 logger.add_log(f"EVENT\tDoDeleteCardHolder\tПолучены данные: ("
                                f"fid: {str_fid} "
-                               f"inn: {str_inn} ", print_it=False)
+                               f"inn: {str_inn})", print_it=False)
 
                 try:
                     res = requests.delete(f'http://{set_ini["host_apacs_i"]}:{set_ini["port_apacs_i"]}/DeleteEmployee'
@@ -572,10 +578,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                             json_replay["RESULT"] = "ERROR"
                             json_replay["DESC"] = json_create["DESC"]
                             json_replay['DATA'] = json_create["DATA"]
+
+                            logger.add_log(f"ERROR\tDoDeleteCardHolder "
+                                           f"Не удалось удалить сотрудника в системе Апакс3000: {json_create['DESC']}")
                         else:
                             # Отправляем запрос на удаление данных сотрудника
 
-                            result = requests.post(f"http://127.0.0.1:{set_ini['port']}/DoDeletePhoto", json=json_request)
+                            result = requests.post(f"http://127.0.0.1:{set_ini['port']}/DoDeletePhoto",
+                                                   json=json_request)
                             result = result.json()
 
                             # con_helper = BSHelper(set_ini)
@@ -612,7 +622,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetBlockCar запрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tGetBlockCar запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
