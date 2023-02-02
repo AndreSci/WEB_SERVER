@@ -8,6 +8,7 @@ from misc.logger import Logger
 from misc.allow_ip import AllowedIP
 from misc.send_sms import SendSMS
 from misc.car_number_test import NormalizeCar
+from misc.errors.save_photo import ErrorPhoto
 # from misc.block_logs import block_flask_logs
 
 from database.requests.db_create_guest import CreateGuestDB
@@ -252,6 +253,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         con_helper.deactivate_person(res_json, logger)
                         logger.add_log(f"WARNING\tDoAddEmployeePhoto\tОтмена пропуска в BaseHelper "
                                        f"из-за ошибки на Драйвере распознания лиц")
+
+                        # Сохраняем фото в log_path где папка photo_errors
+                        ErrorPhoto.save(res_json, settings_ini.take_log_path(), logger)
+
                 if result == "EXCEPTION":
                     pass
                 else:
@@ -262,21 +267,31 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
                 elif result == "ERROR":
-                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t3: {json_replay['DESC']}")
+                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\t{json_replay['DESC']}")
                 elif result == "EXCEPTION":
                     pass
                 elif result == "DRIVER":
 
                     try:
-                        json_replay["DESC"] = f"При добавлении фото произошла ошибка: {json_replay['DATA']['msg']}"
+                        if 'Photo registered' == json_replay['DATA']['msg']:
+                            str_msg = "Лицо уже зарегистрировано"
+                        elif 'Face deflection angle is too large' == json_replay['DATA']['msg']:
+                            str_msg = "Неудачное расположение лица на фото"
+                        elif 'Face clarity is too low' == json_replay['DATA']['msg']:
+                            str_msg = "На фото плохо видно лицо"
+                        else:
+                            str_msg = "Не удалось распознать лицо на фото"
+
+                        json_replay["DESC"] = f"Не удалось добавить фотографию в систему: {str_msg}"
+
                     except Exception as ex:
                         logger.add_log(f"ERROR\tDoAddEmployeePhoto\tНе удалось получить данные из ответа Драйвера {ex}")
                         json_replay["DESC"] = f"При добавлении фото произошла ошибка"
 
                 elif result == "WARNING":
-                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t4: {json_replay['DESC']}")
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
                 elif result == "NotDefined":
-                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t5: {json_replay['DESC']}")
+                    logger.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
                 else:
                     pass
 
@@ -510,7 +525,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                                 logger.add_log(f"EVENT\tDoCreateCardHolder Успешно создан сотрудник для ИНН{str_inn}")
                             else:
                                 json_replay['RESULT'] = "WARNING"
-                                json_replay['DESC'] = "Успешно создан сотрудник в БД. " \
+                                json_replay['DESC'] = "Сотрудник создан. " \
                                                       f"Ошибка: {res_add_photo['DESC']}"
 
                             json_replay['DATA'] = {'id': json_empl['id']}
@@ -526,13 +541,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 except Exception as ex:
                     logger.add_log(f"ERROR\tDoCreateCardHolder ошибка обращения к интерфейсу Apacs3000: {ex}")
                     json_replay["RESULT"] = "ERROR"
-                    json_replay["DESC"] = "Ошибка связи с БД Apacs"
+                    json_replay["DESC"] = "Ошибка в работе системы"
 
             else:
                 # Если в запросе нет Json данных
                 logger.add_log(f"ERROR\tDoCreateCardHolder ошибка чтения Json: В запросе нет Json")
                 json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = ERROR_READ_JSON
+                json_replay["DESC"] = "Ошибка в работе системы"
 
         return jsonify(json_replay)
 
@@ -596,24 +611,24 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                             if result['RESULT'] == "ERROR":
                                 json_replay["RESULT"] = "WARNING"
                                 json_replay["DESC"] = "Сотрудник успешно удалён. " \
-                                                      "Не удалось деактивировать пропуск сотрудника"
+                                                      "Не удалось заблокировать пропуск сотрудника"
                                 json_replay['DATA'] = result
 
                     except Exception as ex:
                         logger.add_log(f"ERROR\tDoDeleteCardHolder Ошибка обращения к интерфейсу Apacs3000: {ex}")
                         json_replay["RESULT"] = "ERROR"
-                        json_replay["DESC"] = "Ошибка связи с БД Apacs"
+                        json_replay["DESC"] = "Ошибка в работе системы"
 
                 except Exception as ex:
                     logger.add_log(f"ERROR\tDoDeleteCardHolder Ошибка обращения к интерфейсу Apacs3000: {ex}")
                     json_replay["RESULT"] = "ERROR"
-                    json_replay["DESC"] = "Ошибка связи с БД Apacs"
+                    json_replay["DESC"] = "Ошибка в работе системы"
 
             else:
                 # Если в запросе нет Json данных
                 logger.add_log(f"ERROR\tDoDeleteCardHolder ошибка чтения Json: В запросе нет Json")
                 json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = ERROR_READ_JSON
+                json_replay["DESC"] = "Ошибка в работе системы"
 
         return jsonify(json_replay)
 
@@ -643,7 +658,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             except Exception as ex:
                 # Если в запросе нет Json данных
                 logger.add_log(f"ERROR\tGetBlockCar ошибка чтения Json: В запросе нет {ex}")
-                json_replay["DESC"] = ERROR_READ_JSON
+                json_replay["DESC"] = "Ошибка в работе системы"
 
         return jsonify(json_replay)
 

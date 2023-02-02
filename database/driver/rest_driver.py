@@ -12,7 +12,7 @@ class ConDriver:
         ret_value = {"RESULT": "ERROR", "DATA": dict(), "DESC": "Ошибка работы с драйвером"}
         try:
             result = requests.post(f"http://{self.settings_ini['dr_host']}:{self.settings_ini['dr_port']}/addFace",
-                                   data=json_data)
+                                   data=json_data, timeout=10)
 
             ret_value = result.json()
 
@@ -46,7 +46,7 @@ class ConDriver:
         try:
             result = requests.post(f"http://{self.settings_ini['dr_host']}:"
                                    f"{self.settings_ini['dr_port']}/addPersonWithFace",
-                                   data=json_data)
+                                   data=json_data, timeout=10)
 
             ret_value = result.json()
 
