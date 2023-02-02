@@ -25,7 +25,7 @@ def test_dir(log_path):
             os.makedirs(log_path)
             print(f"Была создана директория для лог-фалов: {log_path}")
     except Exception as ex:
-        print(ex)
+        print(f"Exception in test direction for logs: {ex}")
         ret_value = False
 
     return ret_value
@@ -56,13 +56,13 @@ class Logger:
             with self.log_guard:  # Защищаем поток
 
                 if print_it:
-                    # print(date_time + "\t" + text)
-                    if 'ERROR' == text[:5]:
-                        print(f"{BColors.col_fail}{date_time}\t{text}{BColors.col_endc}")
-                    elif 'WARNING' == text[:7]:
-                        print(f"{BColors.col_warning}{date_time}\t{text}{BColors.col_endc}")
-                    else:
-                        print(date_time + "\t" + text)
+                    print(date_time + "\t" + text)
+                    # if 'ERROR' == text[:5]:
+                    #     print(f"{BColors.col_fail}{date_time}\t{text}{BColors.col_endc}")
+                    # elif 'WARNING' == text[:7]:
+                    #     print(f"{BColors.col_warning}{date_time}\t{text}{BColors.col_endc}")
+                    # else:
+                    #     print(date_time + "\t" + text)
 
                 # Открываем и записываем логи в файл отчета.
                 with open(f'{log_path}{for_file_name}.log', 'a', encoding='utf-8') as file:
