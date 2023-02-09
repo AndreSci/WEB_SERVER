@@ -10,6 +10,7 @@ from misc.send_sms import SendSMS
 from misc.car_number_test import NormalizeCar
 from misc.errors.save_photo import ErrorPhoto
 # from misc.block_logs import block_flask_logs
+from face_id.resize_img import FlipImg
 
 from database.requests.db_create_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
@@ -241,7 +242,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     res_json["id"] = res_base_helper["DATA"].get("id")
                     res_json["name"] = res_base_helper["DATA"].get("name")
 
-                    # создаем и подключаемся к драйверу Распознания лиц
+                    # Проверяем и меняем, если нужно, размер фото (максимальный размер изначально 1080p.)
+                    FlipImg.convert_img(res_json, logger)
+
+                    # подключаемся к драйверу Распознания лиц
                     connect_driver = ConDriver(set_ini)
                     res_driver = connect_driver.add_person_with_face(res_json, logger)
 
@@ -272,6 +276,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     pass
                 elif result == "DRIVER":
 
+                    # Вариации ошибок связанные с фото и перевод их на русский язык
                     try:
                         if 'Photo registered' == json_replay['DATA']['msg']:
                             str_msg = "Лицо уже зарегистрировано"
@@ -279,6 +284,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                             str_msg = "Неудачное расположение лица на фото"
                         elif 'Face clarity is too low' == json_replay['DATA']['msg']:
                             str_msg = "На фото плохо видно лицо"
+                        elif 'Registered photo size cannot exceed 2M' == json_replay['DATA']['msg']:
+                            str_msg = "Фото слишком большого размера"
+                        elif 'Face too large or incomplete' == json_replay['DATA']['msg']:
+                            str_msg = "Лицо слишком большое или неполное"
+                        elif 'The registered photo resolution is greater than 1080p' == json_replay['DATA']['msg']:
+                            str_msg = "Размер фото слишком высоко (требуется не выше 1080р)"
                         else:
                             str_msg = "Не удалось распознать лицо на фото"
 
@@ -296,9 +307,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     pass
 
             else:
-                logger.add_log(f"ERROR\tDoAddEmployeePhoto\t6: {ERROR_READ_JSON}")
+                logger.add_log(f"ERROR\tDoAddEmployeePhoto\tОшибка, в запросе нет Json данных: {ERROR_READ_JSON}")
                 json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = f"Ошибка: {ERROR_READ_JSON}"
+                json_replay["DESC"] = f"Ошибка на сервере: {ERROR_READ_JSON}"
 
         return jsonify(json_replay)
 
