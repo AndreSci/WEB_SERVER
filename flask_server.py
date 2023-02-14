@@ -11,6 +11,7 @@ from misc.car_number_test import NormalizeCar
 from misc.errors.save_photo import ErrorPhoto
 # from misc.block_logs import block_flask_logs
 from face_id.resize_img import FlipImg
+from face_id.face_recognition import FaceClass
 
 from database.requests.db_create_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
@@ -242,8 +243,15 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     res_json["id"] = res_base_helper["DATA"].get("id")
                     res_json["name"] = res_base_helper["DATA"].get("name")
 
-                    # Проверяем и меняем, если нужно, размер фото (максимальный размер изначально 1080p.)
+                    # Проверяем и меняем, если нужно, размер фото (максимальный размер изначально 720p.)
                     FlipImg.convert_img(res_json, logger)
+
+                    # Ищем лицо на фото
+                    it_face = FaceClass()
+                    res_face_rec = it_face.is_face(res_json)
+
+                    logger.add_log(f"EVENT\tDoAddEmployeePhoto\tРезультат обработки фотографии: {res_face_rec}",
+                                   print_it=False)
 
                     # подключаемся к драйверу Распознания лиц
                     connect_driver = ConDriver(set_ini)
