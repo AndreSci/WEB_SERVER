@@ -31,13 +31,20 @@ class ErrorPhoto:
             dir_ex = True
 
         if dir_ex:
+            base_help_id = res_json.get('id')  # id полученный из ответа base_helper
+
             try:
                 # Сохраняем исходный код base64
-                base_help_id = res_json.get('id')   # id полученный из ответа base_helper
 
-                with open(f"{log_path}photo_errors/{base_help_id}_{date_time}.txt", 'w') as file:
+                with open(f"{log_path}photo_errors/{base_help_id}_{date_time}.txt", 'wb') as file:
                     file.write(res_json['img64'])
 
+            except Exception as ex:
+                logger.add_log(f"ERROR\tErrorPhoto.save\tНе удалось сохранить байт-код в отчете по ошибкам: {ex} "
+                               f"({base_help_id}_{date_time}.txt не сохранён, "
+                               f"пробуем сохранить в {base_help_id}_{date_time}.jpg)", print_it=False)
+
+            try:
                 img_data = base64.b64decode(res_json['img64'])
 
                 # Сохраняем декодированное фото в файл

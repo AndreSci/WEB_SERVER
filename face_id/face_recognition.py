@@ -60,6 +60,9 @@ class FaceClass:
 
                                 face_detected = True
 
+                                d_now = datetime.datetime.now()
+                                file_name = f'{json_data["id"]}_img_{flip}_{d_now.minute}.jpg'
+
                                 try:
                                     # TODO после тестов нужно будет добавить метод продолжения поиска лица
                                     #  после определения что рот выше глаз
@@ -67,22 +70,28 @@ class FaceClass:
                                         # print("Глаза выше рта.")
                                         pass
                                     else:
-                                        d_now = datetime.datetime.now()
-                                        d_now = d_now.minute
-                                        file_name = f'{json_data["id"]}_img_{flip}_{d_now}.jpg'
                                         cv2.imwrite(os.path.join("./temp/pos_eye_mouth", file_name), self.img)
+
                                         with open(f"./temp/pos_eye_mouth/"
-                                                  f"{json_data['id']}_img_{flip}_{d_now}.txt", "w") as file:
+                                                  f'{json_data["id"]}_img_{flip}_{d_now.minute}.txt', "w") as file:
                                             file.write(f"eyes: {eyes}\nmouth: {mouths}")
 
                                 except Exception as ex:
-                                    ret_value['DESC'] = ret_value['DESC'] + f"Ошибка сравнения высоты глаз и рта: {ex} "
+                                    ret_value['DESC'] = ret_value['DESC'] + f"Ошибка сравнения высоты глаз и рта: {ex}"
 
-                                file_name = f'{json_data["id"]}_img_{flip}.jpg'
                                 cv2.imwrite(os.path.join("./temp", file_name), self.img)
 
-                                ret_value['RESULT'] = "SUCCESS"
-                                ret_value['DATA'] = {"path": f"./temp/{file_name}", "flip": flip}
+                                try:    # Выгружаем в правильный base64 (opencv кодирует в своей стиль)
+                                    with open(f"./temp/{file_name}", "rb") as file:
+                                        json_data['img64'] = base64.b64encode(file.read())
+
+                                    ret_value['RESULT'] = "SUCCESS"
+                                    ret_value['DATA'] = {"path": f"./temp/{file_name}", "flip": flip}
+
+                                    os.remove(f"./temp/{file_name}")
+
+                                except Exception as ex:
+                                    ret_value['DESC'] = ret_value['DESC'] + f" Не удалось прочитать файл: {ex}"
 
                                 break
 

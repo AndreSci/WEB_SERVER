@@ -8,9 +8,10 @@ from misc.logger import Logger
 
 class FlipImg:
     """ Класс исправляет изображение до нужного размера с учётом фото сделанные на разных устройствах """
+
     @staticmethod
     def convert_img(res_json: dict, logger: Logger, max_size=1080) -> dict:
-        """ Для проверки и изменения размера фото требуется словарь с полями id и img64 """
+        """ Для проверки и изменения размера фото требуется словарь с полями id и img64 (меняет данные по ссылке)"""
         ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_id = res_json.get('id')
@@ -38,13 +39,13 @@ class FlipImg:
 
             # Если ширина больше max_size и больше высоты
             if max_size <= width > height:
-                h1 = int(1000 / width * 100) * 0.01
+                h1 = int(max_size / width * 100) * 0.01
                 width = int(width * h1)
                 height = int(height * h1)
 
             # Если высота больше всех
             elif height >= max_size:
-                h1 = int(1000 / height * 100) * 0.01
+                h1 = int(max_size / height * 100) * 0.01
                 width = int(width * h1)
                 height = int(height * h1)
 
@@ -52,7 +53,7 @@ class FlipImg:
             image = image.resize((width, height))
             logger.add_log(f"EVENT\tFlipImg.convert_img\tДля id={user_id} "
                            f"процент изменения: {h1}% (новый размер: {width}x{height} - "
-                           f"старый размер: {width_old}x{height_old})")
+                           f"старый размер: {width_old}x{height_old})", print_it=False)
 
             try:
 
@@ -105,7 +106,7 @@ class FlipImg:
                 logger.add_log(f"ERROR\tFlipImg.convert_img\tНе удалось создать и сохранить файл в папку ./temp: {ex}")
 
             if it_saved:
-                with open("img64.jpg", 'rb') as file:
+                with open(f"./temp/{user_id}_img.jpg", 'rb') as file:
                     img_byt = file.read()
                     res_json['img64'] = base64.b64encode(img_byt)
                     # print(res_json['img64'])

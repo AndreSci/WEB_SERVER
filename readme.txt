@@ -10,3 +10,6 @@ flask
 configparser
 pymysql
 fdb
+
+OpenCV версия
+pip install opencv-python==4.5.5.64
