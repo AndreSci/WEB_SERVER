@@ -2,6 +2,7 @@
 
 from flask import Flask, request, jsonify
 import requests
+import datetime
 
 from misc.util import SettingsIni
 from misc.logger import Logger
@@ -461,7 +462,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    # EMPLOYEE ----
+    # EMPLOYEE -----
 
     @app.route('/DoCreateCardHolder', methods=['POST'])
     def create_card_holder():
@@ -585,7 +586,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoDeleteCardHolder запрос от ip: {user_ip}", print_it=False)
+        logger.add_log(f"EVENT\tDoDeleteCardHolder\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -661,7 +662,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetBlockCar запрос от ip: {user_ip}", print_it=False)
+        logger.add_log(f"EVENT\tGetBlockCar\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -684,6 +685,52 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 json_replay["DESC"] = "Ошибка в работе системы"
 
         return jsonify(json_replay)
+
+    # FACE -----
+
+    @app.route('/DoIsFace', methods=['GET'])
+    def it_face_route():
+        """ Обрабатывает фото и определяет лицо """
+        ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoIsFace\tЗапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            ret_value["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            try:
+                json_request = request.json
+
+                # Делаем уникальный id по времени
+                today = datetime.datetime.today()
+                json_request['id'] = str(today.strftime("%Y%m%d%H%M%S"))
+
+                logger.add_log(f"EVENT\tDoIsFace\tПолучены данные: img64.size: {len(json_request['img64'])}",
+                               print_it=False)
+
+                # Проверяем и меняем, если нужно, размер фото (максимальный размер для терминала 1080p.)
+                # Значительная производительность замечена на 720p, так же облегчаете передачу данных терминалу
+                FlipImg.convert_img(json_request, logger, max_size=720)
+
+                # Ищем лицо на фото
+                it_face = FaceClass()
+                ret_value = it_face.is_face(json_request)
+
+                logger.add_log(f"EVENT\tDoIsFace\tРезультат обработки фотографии: {ret_value}",
+                               print_it=False)
+
+                # Сохраняем и убираем лишние символы в коде (b' в начале и ' в конце ).
+                ret_value['DATA']['img64'] = str(json_request['img64'])[2:-1]
+
+            except Exception as ex:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tDoIsFace\tОшибка чтения Json: В запросе нет {ex}")
+                ret_value["DESC"] = "Ошибка в работе системы"
+
+        return jsonify(ret_value)
 
     # RUN SERVER FLASK  ------
     app.run(debug=False, host=set_ini["host"], port=int(set_ini["port"]))

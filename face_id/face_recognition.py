@@ -63,12 +63,15 @@ class FaceClass:
                                 file_name = f'{json_data["id"]}_img_{flip}.jpg'
 
                                 try:
-                                    # TODO после тестов нужно будет добавить метод продолжения поиска лица
-                                    #  после определения что рот выше глаз
+
                                     if eyes[0][1] < mouths[0][1]:
                                         # print("Глаза выше рта.")
                                         pass
                                     else:
+                                        # Проверяем на Альфа слой (RGBA)
+                                        if self.img.mode in ("RGBA", "P"):
+                                            self.img = self.img.convert("RGB")
+
                                         cv2.imwrite(os.path.join("./temp/pos_eye_mouth", file_name), self.img)
 
                                         with open(f"./temp/pos_eye_mouth/"
