@@ -2,7 +2,6 @@ import cv2
 import numpy
 import os
 import base64
-import datetime
 
 from misc.timer import timer_function
 
@@ -16,6 +15,7 @@ class FaceClass:
         self.MOUTH_CASCADE = cv2.CascadeClassifier(r'./mod/mouth.xml')
 
         self.img = ""
+        self.test_img = ''
         self.dict_img = {}
 
     def is_face(self, json_data: dict):
@@ -24,15 +24,15 @@ class FaceClass:
         ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         img_create = False
-
         face_detected = False
 
         try:
             # Преобразуем фото в cv2 формат
             img_data = base64.b64decode(json_data['img64'])
-            self.img = cv2.imdecode(numpy.fromstring(img_data, numpy.uint8), cv2.IMREAD_UNCHANGED)
+            self.test_img = self.img = cv2.imdecode(numpy.fromstring(img_data, numpy.uint8), cv2.IMREAD_UNCHANGED)
 
             img_create = True
+
         except Exception as ex:
             ret_value['DESC'] = f"Ошибка обработки входных данных: {ex} "
 
@@ -40,7 +40,7 @@ class FaceClass:
             # Пробуем найти лицо и повернуть
             try:
                 for flip in range(1, 10, 1):
-                    self.fix_orientation(flip)
+                    self.change_orientation(flip)
 
                     # Пробуем найти лицо на фото
                     faces = self.FACE_CASCADE_DB.detectMultiScale(self.img, 1.1, 19)
@@ -60,8 +60,7 @@ class FaceClass:
 
                                 face_detected = True
 
-                                d_now = datetime.datetime.now()
-                                file_name = f'{json_data["id"]}_img_{flip}_{d_now.minute}.jpg'
+                                file_name = f'{json_data["id"]}_img_{flip}.jpg'
 
                                 try:
                                     # TODO после тестов нужно будет добавить метод продолжения поиска лица
@@ -73,7 +72,7 @@ class FaceClass:
                                         cv2.imwrite(os.path.join("./temp/pos_eye_mouth", file_name), self.img)
 
                                         with open(f"./temp/pos_eye_mouth/"
-                                                  f'{json_data["id"]}_img_{flip}_{d_now.minute}.txt', "w") as file:
+                                                  f'{json_data["id"]}_img_{flip}.txt', "w") as file:
                                             file.write(f"eyes: {eyes}\nmouth: {mouths}")
 
                                 except Exception as ex:
@@ -88,7 +87,8 @@ class FaceClass:
                                     ret_value['RESULT'] = "SUCCESS"
                                     ret_value['DATA'] = {"path": f"./temp/{file_name}", "flip": flip}
 
-                                    os.remove(f"./temp/{file_name}")
+                                    # TODO включить после тестов
+                                    # os.remove(f"./temp/{file_name}")
 
                                 except Exception as ex:
                                     ret_value['DESC'] = ret_value['DESC'] + f" Не удалось прочитать файл: {ex}"
@@ -103,26 +103,42 @@ class FaceClass:
 
         return ret_value
 
-    def fix_orientation(self, orientation):
-        """ Поворачивает фото по номеру orientation """
+    def change_orientation(self, orientation):
+        """ Поворачивает фото по индексу orientation, \n
+        порядок изменён и не может быть использован для определения позиции фото из разных аппаратов. """
 
+        # Зона 360 --------------------------------------
         if orientation == 1:
+            # без изменений
             pass
         elif orientation == 2:
-            self.img = cv2.flip(self.img, 0)
+            # 90
+            self.img = cv2.rotate(self.test_img, cv2.ROTATE_90_CLOCKWISE)
         elif orientation == 3:
-            self.img = cv2.rotate(self.img, cv2.ROTATE_180)
+            # 180
+            self.img = cv2.rotate(self.test_img, cv2.ROTATE_180)
         elif orientation == 4:
-            self.img = cv2.flip(self.img, 1)
+            # 270
+            self.img = cv2.rotate(self.test_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        # ----------------------------------------------
+
+        # зеркальные Если не удалось найти в зоне 360
         elif orientation == 5:
-            self.img = cv2.flip(self.img, 0)
-            self.img = cv2.rotate(self.img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            # Зеркало
+            self.img = cv2.flip(self.test_img, 1)
         elif orientation == 6:
-            self.img = cv2.rotate(self.img, cv2.ROTATE_90_CLOCKWISE)
+            # 270 + зеркало
+            temp_img = cv2.flip(self.test_img, 0)
+            self.img = cv2.rotate(temp_img, cv2.ROTATE_90_CLOCKWISE)
         elif orientation == 7:
-            self.img = cv2.flip(self.img, 0)
-            self.img = cv2.rotate(self.img, cv2.ROTATE_90_CLOCKWISE)
+            # 90 + зеркало
+            temp_img = cv2.flip(self.test_img, 0)
+            self.img = cv2.rotate(temp_img, cv2.ROTATE_90_COUNTERCLOCKWISE)
         elif orientation == 8:
-            self.img = cv2.rotate(self.img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            # 180 + зеркало
+            self.img = cv2.flip(self.test_img, 0)
+
+        # не уверен в номере 9
         elif orientation == 9:
-            self.img = cv2.flip(self.img, -1)
+            # 180
+            self.img = cv2.flip(self.test_img, -1)

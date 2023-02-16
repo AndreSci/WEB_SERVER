@@ -16,7 +16,7 @@ def main():
     port = settings.settings_ini["port"]
 
     # Меняем имя терминала
-    ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {port}")
+    ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {port} - (use OpenCV)")
 
     # Обьявляем логирование
     logger = Logger(settings)
@@ -32,3 +32,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    input()
