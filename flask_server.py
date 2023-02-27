@@ -246,7 +246,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                     # Проверяем и меняем, если нужно, размер фото (максимальный размер для терминала 1080p.)
                     # Значительная производительность замечена на 720p, так же облегчаете передачу данных терминалу
-                    FlipImg.convert_img(res_json, logger, max_size=720)
+                    FlipImg.convert_img(res_json, logger, max_size=1080)
 
                     # Ищем лицо на фото
                     it_face = FaceClass()
@@ -280,10 +280,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 # Задумка на случай добавления ситуаций
                 if result == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"
+                    logger.add_log(f"SUCCESS\tDoAddEmployeePhoto\t"
+                                   f"Успешно добавлено лицо под id: {res_base_helper['DATA'].get('id')}")
                 elif result == "ERROR":
                     logger.add_log(f"ERROR\tDoAddEmployeePhoto\t{json_replay['DESC']}")
                 elif result == "EXCEPTION":
-                    pass
+                    logger.add_log(f"ERROR\tDoAddEmployeePhoto\tEXCEPTION")
                 elif result == "DRIVER":
 
                     # Вариации ошибок связанные с фото и перевод их на русский язык
