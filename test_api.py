@@ -21,11 +21,11 @@ def test_ip():
     allow_ip = AllowedIP()
     allow_ip.read_file(log)
 
-    assert(allow_ip.find_ip("192.168.48.1", log) == True)  # True
-    assert(allow_ip.find_ip("192.168.48.2", log) == False)  # False
-    assert(allow_ip.find_ip("192.168.48.3", log) == True)  # True
-    assert(allow_ip.find_ip("192.168.48.4", log) == False)  # False
-    assert(allow_ip.find_ip("192.168.48.5", log) == False)  # False
-    assert(allow_ip.find_ip("192.168.48.6", log) == False)  # False
-    assert(allow_ip.find_ip("192.168.48.7", log) == False)  # False
-    assert(allow_ip.find_ip("192.168.48.8", log) == False)  # False
+    assert(allow_ip.find("192.168.48.1", log) == True)  # True
+    assert(allow_ip.find("192.168.48.2", log) == False)  # False
+    assert(allow_ip.find("192.168.48.3", log) == True)  # True
+    assert(allow_ip.find("192.168.48.4", log) == False)  # False
+    assert(allow_ip.find("192.168.48.5", log) == False)  # False
+    assert(allow_ip.find("192.168.48.6", log) == False)  # False
+    assert(allow_ip.find("192.168.48.7", log) == False)  # False
+    assert(allow_ip.find("192.168.48.8", log) == False)  # False

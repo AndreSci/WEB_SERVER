@@ -32,7 +32,7 @@ class AllowedIP:
                 except Exception as ex:
                     logger.add_log(f"ERROR\tAllowedIP.read_file - Exception:{ex}")
 
-    def find_ip(self, user_ip: str, logger: Logger, activity_lvl=1) -> bool:
+    def find(self, user_ip: str, logger: Logger, activity_lvl=1) -> bool:
         """ Функция поиска IP в словаре, если нет, \n
             вызывает функцию класса add_ip """
 
@@ -45,11 +45,11 @@ class AllowedIP:
                 ret_value = True
         else:
             # Если нет IP добавляем его в файл и словарь класса
-            self.add_ip(user_ip, logger)
+            self.add(user_ip, logger)
 
         return ret_value
 
-    def add_ip(self, new_ip: str, logger: Logger, activity=0) -> bool:
+    def add(self, new_ip: str, logger: Logger, activity=0) -> bool:
         """ Функция добавляет IP пользователя в файл со значением str(0)\n
             или если указан как allow_ip='1' """
         ret_value = False

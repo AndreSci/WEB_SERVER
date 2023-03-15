@@ -56,7 +56,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoAddIp запрос от ip: {user_ip}", print_it=False)
 
-        if not allow_ip.find_ip(user_ip, logger, 2):  # Устанавливаем activity_lvl=2 для проверки уровня доступа
+        if not allow_ip.find(user_ip, logger, 2):  # Устанавливаем activity_lvl=2 для проверки уровня доступа
             json_replay["DESC"] = "Ошибка доступа по IP"
         else:
 
@@ -66,7 +66,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 new_ip = json_request.get("ip")
                 activity = int(json_request.get("activity"))
 
-                allow_ip.add_ip(new_ip, logger, activity)
+                allow_ip.add(new_ip, logger, activity)
 
                 json_replay["RESULT"] = "SUCCESS"
                 json_replay["DESC"] = f"IP - {new_ip} добавлен с доступом {activity}"
@@ -89,7 +89,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoCreateGuest запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
@@ -145,7 +145,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             json_request = dict()
@@ -221,7 +221,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoAddEmployeePhoto\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             # Проверяем наличие Json в запросе
@@ -332,7 +332,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoDeletePhoto запрос от ip: {user_ip}", print_it=False)
 
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
@@ -382,7 +382,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoAddGuest запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
@@ -412,7 +412,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoUpdateGuest запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
@@ -442,7 +442,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoAddPhoto запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
             try:
@@ -477,7 +477,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoCreateCardHolder запрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
@@ -591,7 +591,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoDeleteCardHolder\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
@@ -667,7 +667,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tGetBlockCar\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
@@ -699,7 +699,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         logger.add_log(f"EVENT\tDoIsFace\tЗапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
+        if not allow_ip.find(user_ip, logger):
             ret_value["DESC"] = ERROR_ACCESS_IP
         else:
 
