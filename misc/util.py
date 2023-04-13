@@ -35,6 +35,8 @@ class SettingsIni:
                 # Apacs interface
                 self.settings_ini["host_apacs_i"] = self.settings_file['APACS_INTERFACE']['HOST']
                 self.settings_ini['port_apacs_i'] = self.settings_file['APACS_INTERFACE']['PORT']
+                # Terminal photo
+                self.settings_ini['term_path'] = self.settings_file['PHOTO']['TERM_PATH']
 
                 ret_value["result"] = True
 
@@ -55,3 +57,7 @@ class SettingsIni:
 
     def take_log_path(self):
         return self.settings_ini["log_path"]
+
+    def take_term_path(self):
+        """ Получить путь к месту хранения фото терминалов распознания лица """
+        return self.settings_ini['term_path']

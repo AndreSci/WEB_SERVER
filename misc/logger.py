@@ -1,6 +1,7 @@
 import threading
 import os
 import datetime
+
 from misc.util import SettingsIni
 
 
@@ -53,6 +54,12 @@ class Logger:
         mess = date_time + "\t" + text + "\n"
 
         if test_dir(log_path):
+
+            if log_path[-1] == '\\' or log_path[-1] == '/':
+                pass  # Захотелось использовать pass
+            else:
+                log_path = log_path + '/'
+
             with self.log_guard:  # Защищаем поток
 
                 if print_it:

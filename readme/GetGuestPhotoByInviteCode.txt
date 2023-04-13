@@ -1,0 +1,9 @@
+
+http://127.0.0.1:8066/GetGuestPhotoByInviteCode
+(GET)
+
+data args (параметры в запросе)
+127.0.0.1:8066/GetGuestPhotoByInviteCode?InviteCode=000000
+
+
+отвечает строкой типа base64 или строка описания ошибки

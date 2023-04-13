@@ -27,7 +27,7 @@ def do_request_str(last_name, first_name, middle_name, car_number, remote_id, ac
 
 
 class CreateGuestDB:
-    # функция отправки данных для таблицы sac3.tguest
+    # Класс работы с гостем
     @staticmethod
     def add_guest(data_on_pass: dict, logger: Logger) -> dict:
         """ принимает словарь с данными от on_pass и logger """
@@ -143,3 +143,42 @@ class CreateGuestDB:
             ret_value["desc"] = ERROR_ANY_ERROR
 
         return ret_value
+
+    @staticmethod
+    def get_photo(invite_code: str, logger: Logger) -> dict:
+
+        ret_value = {"RESULT": False, "DESC": '', 'DATA': dict()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db()
+
+            with connection.cursor() as cur:
+
+                cur.execute(f"select * from sac3.tguest where FInviteCode = '{invite_code}'")
+                result = cur.fetchone()
+
+                if not result:
+                    ret_value["DESC"] = f"Не удалось найти InviteCode = {invite_code}"
+                else:
+
+                    cur.execute(f"select * from vig_face.tperson where "
+                                f"FRemoteID = {result.get('FID')} "
+                                f"and ftag = 'Guest'")
+
+                    result = cur.fetchone()
+
+                    if result:
+                        ret_value["RESULT"] = True
+                        ret_value['DATA'] = result
+                    else:
+                        ret_value["DESC"] = f"Не удалось найти в tperson.FRemoteID = {result.get('FID')}"
+
+            connection.close()
+
+        except Exception as ex:
+            ret_value["DESC"] = "Ошибка работы с базой данных CreateGuestDB.get_photo"
+            logger.add_log(f"ERROR\tCreateGuestDB.get_photo\tОшибка работы с базой данных: {ex}")
+
+        return ret_value
+

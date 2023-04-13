@@ -14,7 +14,7 @@ from misc.errors.save_photo import ErrorPhoto
 from face_id.resize_img import FlipImg
 from face_id.face_recognition import FaceClass
 
-from database.requests.db_create_guest import CreateGuestDB
+from database.requests.db_guest import CreateGuestDB
 from database.requests.db_get_card_holders import CardHoldersDB
 from database.requests.db_company import CompanyDB
 from database.driver.rest_driver import ConDriver
@@ -731,6 +731,42 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 # Если в запросе нет Json данных
                 logger.add_log(f"ERROR\tDoIsFace\tОшибка чтения Json: В запросе нет {ex}")
                 ret_value["DESC"] = "Ошибка в работе системы"
+
+        return jsonify(ret_value)
+
+    @app.route('/GetGuestPhotoByInviteCode', methods=['GET'])
+    def get_guest_photo():
+        """ Получить фото гостя """
+        ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tGetGuestPhotoByInviteCode\tЗапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find(user_ip, logger):
+            ret_value['DESC'] = ERROR_ACCESS_IP
+        else:
+
+            try:
+                request_data = request.args
+
+                # Получаем FID гостя
+                db_result = CreateGuestDB.get_photo(request_data.get('InviteCode'), logger)
+
+                if db_result['RESULT']:
+                    id_guest = db_result['DATA'].get('FID')
+
+                    with open(f"{set_ini.get('term_path')}/{id_guest}.txt", 'r') as file:
+                        ret_value['DATA'] = file.read()
+
+                    ret_value['RESULT'] = "SUCCESS"
+
+                else:
+                    ret_value['DESC'] = db_result['DESC']
+
+            except Exception as ex:
+                logger.add_log(f"ERROR\tGetGuestPhotoByInviteCode\tИсключение вызвало: {ex}")
+                ret_value['DESC'] = f"Исключение вызвало: {ex}"
 
         return jsonify(ret_value)
 
