@@ -488,6 +488,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 json_request = request.json
 
+                # исправляем текст
                 first_name = convert_word(json_request.get("First_Name"))
                 last_name = convert_word(json_request.get("Last_Name"))
                 middle_name = convert_word(json_request.get("Middle_Name"))
