@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 import requests
 import datetime
 
+from misc.allowed_words import convert_word
 from misc.util import SettingsIni
 from misc.logger import Logger
 from misc.allow_ip import AllowedIP
@@ -487,11 +488,11 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 json_request = request.json
 
-                first_name = json_request.get("First_Name")
-                last_name = json_request.get("Last_Name")
-                middle_name = json_request.get("Middle_Name")
-                str_inn = json_request.get("inn")
-                car_number = json_request.get("Car_Number")
+                first_name = convert_word(json_request.get("First_Name"))
+                last_name = convert_word(json_request.get("Last_Name"))
+                middle_name = convert_word(json_request.get("Middle_Name"))
+                str_inn = convert_word(json_request.get("inn"))
+                car_number = convert_word(json_request.get("Car_Number"))
                 photo_img64 = 0
 
                 try:
