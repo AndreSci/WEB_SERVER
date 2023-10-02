@@ -182,3 +182,43 @@ class CreateGuestDB:
 
         return ret_value
 
+    @staticmethod
+    def del_guest(account_id: int, remote_id: int, logger: Logger) -> dict:
+
+        ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db()
+
+            with connection.cursor() as cur:
+                # Проверяем компанию на доступность
+                cur.execute(f"select * from sac3.taccount, sac3.tcompany "
+                            f"where FCompanyID = tcompany.FID "
+                            f"and taccount.FID = {account_id} "
+                            f"and tcompany.FActivity = 1 "
+                            f"and taccount.FActivity = 1")
+                request_activity = cur.fetchall()
+
+                if len(request_activity) == 0:
+                    ret_value["status"] = "ACCESS_DENIED"
+                    ret_value["DESC"] = "Компания/Аккаунт не найден(а) или имеет ограничения."
+                    logger.add_log(f"WARNING\tCreateGuestDB.del_guest\tРегистрация заявки отклонена "
+                                   f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
+                else:
+                    cur.execute(f"update sac3.tguest set FActivity = 0 where FRemoteID = {remote_id}")
+
+                    connection.commit()
+
+                    if cur.rowcount > 1:
+                        ret_value['DESC'] = f"По какой то причине в БД было больше одной заявки с id = {remote_id}"
+
+                    ret_value['RESULT'] = "SUCCESS"
+
+        except Exception as ex:
+            ret_value['DESC'] = "Ошибка работы с базой данных"
+            logger.add_log(f"EXCEPTION\tCreateGuestDB.del_guest\tОшибка работы с базой данных: {ex}")
+
+        return ret_value
+
+

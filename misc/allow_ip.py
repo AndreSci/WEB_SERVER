@@ -13,9 +13,9 @@ class AllowedIP:
         self.TH_LOCK = threading.Lock()
         self.file = configparser.ConfigParser()
 
-    def read_file(self, logger: Logger):
+    def read_file(self, logger: Logger) -> bool:
         """ Функция загрузки данных IP в словарь класса """
-
+        ret_value = False
         with self.TH_LOCK:
             if os.path.isfile("allowed_ip.ini"):
                 try:
@@ -27,10 +27,14 @@ class AllowedIP:
                     for key, val in self.file["CONNECTIONS"].items():
                         self.allow_ip[key] = int(val)
 
+                    ret_value = True
+
                 except KeyError as ex:
                     logger.add_log(f"ERROR\tAllowedIP.read_file - Ошибка по ключу словаря: {ex}")
                 except Exception as ex:
                     logger.add_log(f"ERROR\tAllowedIP.read_file - Exception:{ex}")
+
+        return ret_value
 
     def find(self, user_ip: str, logger: Logger, activity_lvl=1) -> bool:
         """ Функция поиска IP в словаре, если нет, \n
