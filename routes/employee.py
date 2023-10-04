@@ -3,7 +3,7 @@ from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ERROR_READ_JSON, ERRO
 from misc.errors.save_photo import ErrorPhoto
 from face_id.resize_img import FlipImg
 from face_id.face_recognition import FaceClass
-from database.driver.rest_driver import ConDriver
+from database.driver.rest_driver import FaceDriver
 from database.base_helper.helper import BSHelper
 
 
@@ -55,7 +55,7 @@ def add_employee_photo():
                                print_it=False)
 
                 # подключаемся к драйверу Распознания лиц
-                connect_driver = ConDriver(SET_INI)
+                connect_driver = FaceDriver(SET_INI)
                 res_driver = connect_driver.add_person_with_face(res_json, LOGGER)
 
                 if res_driver["RESULT"] == "ERROR":
@@ -151,7 +151,7 @@ def delete_person():
                 res_json["name"] = res_base_helper["DATA"].get("name")
 
                 # создаем и подключаемся к драйверу Коли
-                connect_driver = ConDriver(SET_INI)
+                connect_driver = FaceDriver(SET_INI)
                 res_driver = connect_driver.delete_person(res_json, LOGGER)
 
                 if res_driver['RESULT'] == "SUCCESS":

@@ -2,6 +2,7 @@ import threading
 import os
 import datetime
 import inspect
+import traceback
 
 # Данные для logger
 LOGGER_PATH = os.path.join(os.getcwd(), "logs\\")
@@ -120,4 +121,4 @@ class Logger(metaclass=SingletonBaseClass):
         # и получи его имя
         code_obj_name = code_obj.co_name
 
-        return self.add_log(f"EXCEPTION\t{code_obj_name}\t{text}", print_it)
+        return self.add_log(f"EXCEPTION\t{code_obj_name}\t{text} - {traceback.format_exc()}", print_it)

@@ -3,7 +3,7 @@ import json
 from misc.logger import Logger
 
 
-class ConDriver:
+class FaceDriver:
     """ Соединение с драйвером посредником (Колин драйвер) """
     def __init__(self, set_ini):
         self.settings_ini = set_ini
