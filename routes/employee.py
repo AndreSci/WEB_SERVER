@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ERROR_READ_JSON, ERROR_ON_SERVER, SET_INI
+from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ERROR_READ_JSON, ERROR_ON_SERVER, ConstControl
 from misc.errors.save_photo import ErrorPhoto
 from face_id.resize_img import FlipImg
 from face_id.face_recognition import FaceClass
@@ -28,7 +28,7 @@ def add_employee_photo():
             res_json = request.json
             LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучены данные: (id: {res_json.get('id')})")
 
-            con_helper = BSHelper(SET_INI)
+            con_helper = BSHelper(ConstControl.get_set_ini())
 
             # Отправляем запрос на получение данных сотрудника
             res_base_helper = con_helper.get_card_holder(res_json, LOGGER)
@@ -55,7 +55,7 @@ def add_employee_photo():
                                print_it=False)
 
                 # подключаемся к драйверу Распознания лиц
-                connect_driver = FaceDriver(SET_INI)
+                connect_driver = FaceDriver(ConstControl.get_set_ini())
                 res_driver = connect_driver.add_person_with_face(res_json, LOGGER)
 
                 if res_driver["RESULT"] == "ERROR":
@@ -68,7 +68,7 @@ def add_employee_photo():
                                    f"из-за ошибки на Драйвере распознания лиц")
 
                     # Сохраняем фото в log_path где папка photo_errors
-                    ErrorPhoto.save(res_json, SET_INI['log_path'], LOGGER)
+                    ErrorPhoto.save(res_json, ConstControl.get_set_ini().get('log_path'), LOGGER)
 
             if result == "EXCEPTION":
                 pass
@@ -142,7 +142,7 @@ def delete_person():
                            f"id: {res_json.get('id')})")
 
             # Отправляем запрос на удаление данных сотрудника
-            con_helper = BSHelper(SET_INI)
+            con_helper = BSHelper(ConstControl.get_set_ini())
             res_base_helper = con_helper.deactivate_person_apacsid(res_json, LOGGER)
             result = res_base_helper.get("RESULT")
 
@@ -151,7 +151,7 @@ def delete_person():
                 res_json["name"] = res_base_helper["DATA"].get("name")
 
                 # создаем и подключаемся к драйверу Коли
-                connect_driver = FaceDriver(SET_INI)
+                connect_driver = FaceDriver(ConstControl.get_set_ini())
                 res_driver = connect_driver.delete_person(res_json, LOGGER)
 
                 if res_driver['RESULT'] == "SUCCESS":

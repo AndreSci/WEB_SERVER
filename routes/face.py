@@ -1,6 +1,6 @@
 import datetime
 from flask import Blueprint, request, jsonify
-from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, SET_INI
+from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ConstControl
 from face_id.resize_img import FlipImg
 from face_id.face_recognition import FaceClass
 from database.requests.db_guest import CreateGuestDB
@@ -76,7 +76,7 @@ def get_guest_photo():
             if db_result['RESULT']:
                 id_guest = db_result['DATA'].get('FID')
 
-                with open(f"{SET_INI.get('term_path')}/{id_guest}.txt", 'r') as file:
+                with open(f"{ConstControl.get_set_ini().get('term_path')}/{id_guest}.txt", 'r') as file:
                     ret_value['DATA'] = file.read()
 
                 ret_value['RESULT'] = "SUCCESS"

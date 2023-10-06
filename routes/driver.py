@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, SET_INI
+from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ConstControl
 from database.driver.rest_driver import FaceDriver
 
 
@@ -25,7 +25,7 @@ def add_person():
             res_json = request.json
 
             # создаем и подключаемся к драйверу Коли
-            connect_driver = FaceDriver(SET_INI)
+            connect_driver = FaceDriver(ConstControl.get_set_ini())
             result = connect_driver.add_person(res_json, LOGGER)
 
             if result == "SUCCESS":
@@ -56,7 +56,7 @@ def update_guest_driver():
             res_json = request.json
 
             # создаем и подключаемся к драйверу Коли
-            connect_driver = FaceDriver(SET_INI)
+            connect_driver = FaceDriver(ConstControl.get_set_ini())
             result = connect_driver.update_person(res_json, LOGGER)
 
             if result == "SUCCESS":
@@ -87,7 +87,7 @@ def add_new_photo_driver():
             res_json = request.json
 
             # создаем и подключаемся к драйверу Коли
-            connect_driver = FaceDriver(SET_INI)
+            connect_driver = FaceDriver(ConstControl.get_set_ini())
             result = connect_driver.add_face(res_json, LOGGER)
 
             if result['RESULT'] == "SUCCESS":

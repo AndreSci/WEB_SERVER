@@ -1,6 +1,6 @@
 import requests
 from flask import Blueprint, request, jsonify
-from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, SET_INI
+from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ConstControl
 from misc.allowed_words import convert_word
 from database.requests.db_company import CompanyDB
 from database.requests.db_get_card_holders import CardHoldersDB
@@ -137,7 +137,8 @@ def create_card_holder():
                 car_number = str(car_number).upper().replace(' ', '')
 
             try:
-                res = requests.get(f'http://{SET_INI["host_apacs_i"]}:{SET_INI["port_apacs_i"]}/CreateEmployee'
+                res = requests.get(f'http://{ConstControl.get_set_ini().get("host_apacs_i")}:'
+                                   f'{ConstControl.get_set_ini().get("port_apacs_i")}/CreateEmployee'
                                    f'?First_Name={first_name}'
                                    f'&Last_Name={last_name}'
                                    f'&Middle_Name={middle_name}'
@@ -156,7 +157,8 @@ def create_card_holder():
                     json_empl['id'] = int(sys_addr_id, 16)
                     json_empl['img64'] = json_request.get("img64")
 
-                    res_add_photo = requests.post(f"http://127.0.0.1:{SET_INI['port']}/DoAddEmployeePhoto",
+                    res_add_photo = requests.post(f"http://127.0.0.1:{ConstControl.get_set_ini().get('port')}"
+                                                  f"/DoAddEmployeePhoto",
                                                   json=json_empl)
 
                     if res_add_photo.status_code == 200:
@@ -231,7 +233,8 @@ def delete_card_holder():
                            f"inn: {str_inn})", print_it=False)
 
             try:
-                res = requests.delete(f'http://{SET_INI["host_apacs_i"]}:{SET_INI["port_apacs_i"]}/DeleteEmployee'
+                res = requests.delete(f'http://{ConstControl.get_set_ini().get("host_apacs_i")}:'
+                                      f'{ConstControl.get_set_ini().get("port_apacs_i")}/DeleteEmployee'
                                       f'?INN={str_inn}'
                                       f'&FID={str_fid}')
 
@@ -248,7 +251,8 @@ def delete_card_holder():
                     else:
                         # Отправляем запрос на удаление данных сотрудника
 
-                        result = requests.post(f"http://127.0.0.1:{SET_INI['port']}/DoDeletePhoto",
+                        result = requests.post(f"http://127.0.0.1:{ConstControl.get_set_ini().get('port')}"
+                                               f"/DoDeletePhoto",
                                                json=json_request)
                         result = result.json()
 

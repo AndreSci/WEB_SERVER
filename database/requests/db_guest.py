@@ -394,7 +394,8 @@ class CreateGuestDB:
 
             with connection.cursor() as cur:
                 # Проверяем компанию на доступность
-                cur.execute(f"insert into vig_face.tperson(FName, FRemoteID) values ('{f_name}', {remote_id})")
+                cur.execute(f"insert into vig_face.tperson(FName, FRemoteID, FDateCreate) "
+                            f"values ('{f_name}', {remote_id}, now())")
 
                 connection.commit()
 

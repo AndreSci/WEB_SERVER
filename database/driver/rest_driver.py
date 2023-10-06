@@ -17,10 +17,10 @@ class FaceDriver:
             ret_value = result.json()
 
             if ret_value['RESULT'] == "ERROR":
-                logger.add_log(f"ERROR\tConDriver.add_face - Ошибка на драйвере - {json_data['DATA']}")
+                logger.add_log(f"ERROR\tFaceDriver.add_face - Ошибка на драйвере - {json_data['DATA']}")
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tConDriver.add_face - Исключение вызвало связь с Драйвером - {ex}")
+            logger.add_log(f"ERROR\tFaceDriver.add_face - Исключение вызвало связь с Драйвером - {ex}")
 
         return ret_value
 
@@ -34,10 +34,10 @@ class FaceDriver:
             ret_value = json_data["RESULT"]
 
             if ret_value == "ERROR":
-                logger.add_log(f"ERROR\tConDriver.add_person - Ошибка на драйвере: {json_data['DATA']}")
+                logger.add_log(f"ERROR\tFaceDriver.add_person - Ошибка на драйвере: {json_data['DATA']}")
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tConDriver.add_person - Исключение вызвало связь с Драйвером: {ex}")
+            logger.add_log(f"ERROR\tFaceDriver.add_person - Исключение вызвало связь с Драйвером: {ex}")
 
         return ret_value
 
@@ -51,10 +51,10 @@ class FaceDriver:
             ret_value = result.json()
 
             if ret_value["RESULT"] == "ERROR":
-                logger.add_log(f"ERROR\tConDriver.add_person_with_face - Ошибка на драйвере: {ret_value.get('DATA')}")
+                logger.add_log(f"ERROR\tFaceDriver.add_person_with_face - Ошибка на драйвере: {ret_value.get('DATA')}")
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tConDriver.add_person_with_face - Исключение вызвало связь с Драйвером: {ex}")
+            logger.add_log(f"ERROR\tFaceDriver.add_person_with_face - Исключение вызвало связь с Драйвером: {ex}")
 
         return ret_value
 
@@ -69,10 +69,10 @@ class FaceDriver:
             ret_value = json_data["RESULT"]
 
             if ret_value == "ERROR":
-                logger.add_log(f"ERROR\tConDriver.update_person - Ошибка на драйвере: {json_data['DATA']}")
+                logger.add_log(f"ERROR\tFaceDriver.update_person - Ошибка на драйвере: {json_data['DATA']}")
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tConDriver.update_person - Исключение вызвало связь с Драйвером: {ex}")
+            logger.add_log(f"ERROR\tFaceDriver.update_person\tИсключение вызвало связь с Драйвером: {ex}")
 
         return ret_value
 
@@ -87,10 +87,10 @@ class FaceDriver:
             ret_value['RESULT'] = json_data["RESULT"]
 
             if ret_value == "ERROR":
-                logger.add_log(f"ERROR\tConDriver.delete_person - Ошибка на драйвере: {json_data.get('DATA')}")
+                logger.add_log(f"ERROR\tFaceDriver.delete_person - Ошибка на драйвере: {json_data.get('DATA')}")
                 ret_value['DESC'] = json_data["DATA"]['msg']
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tConDriver.delete_person - Исключение вызвало связь с Драйвером: {ex}")
+            logger.add_log(f"ERROR\tFaceDriver.delete_person\tИсключение вызвало связь с Драйвером: {ex}")
 
         return ret_value

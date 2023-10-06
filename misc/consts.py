@@ -9,9 +9,6 @@ ERROR_ACCESS_IP = 'access_block_ip'
 ERROR_READ_JSON = 'error_read_request'
 ERROR_ON_SERVER = 'server_error'
 
-IP_HOST_APACS = '127.0.0.1'
-PORT_APACS = '8080'
-
 CLASS_SET_INI = SettingsIni()
 SET_INI = dict()
 
@@ -36,3 +33,6 @@ class ConstControl:
             LOGGER.add_log(f"ERROR\tConstControl.set_ini\t{res['desc']}")
             return False
 
+    @staticmethod
+    def get_set_ini():
+        return SET_INI
