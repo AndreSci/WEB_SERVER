@@ -3,6 +3,9 @@ import unittest
 
 REMOTE_ID = 11
 ACCOUNT_ID = 1001
+FACE_STATION_ID_INPUT = 45
+FACE_STATION_ID_OUTPUT = 46
+
 
 JSON_GUEST = {
     "FAccountID": 1001,
@@ -20,6 +23,7 @@ class TestRequestKus(unittest.TestCase):
     guest_fid = None
     person_id = None
 
+    # СОЗДАЕМ И БЛОКИРУЕМ ЗАЯВКУ
     def test_001_delete_guest(self):
         """ Удаляем (если есть в БД) тестовую заявку на гостя."""
 
@@ -38,9 +42,7 @@ class TestRequestKus(unittest.TestCase):
 
         except Exception as ex:
             ret_value['DESC'] = str(ex)
-
-        print("TEST: 001")
-        print(ret_value)
+        print(f"\t{ret_value}\n")
         self.assertTrue(ret_value['RESULT'])
 
     def test_002_create_guest(self):
@@ -65,8 +67,7 @@ class TestRequestKus(unittest.TestCase):
 
         except Exception as ex:
             ret_value['DESC'] = str(ex)
-        print("TEST: 002")
-        print(ret_value)
+        print(f"\t{ret_value}\n")
         self.assertTrue(ret_value['RESULT'])
 
     def test_003_block_guest(self):
@@ -89,12 +90,10 @@ class TestRequestKus(unittest.TestCase):
 
         except Exception as ex:
             ret_value['DESC'] = str(ex)
-
-        print("TEST: 003")
-        print(ret_value)
-
+        print(f"\n{ret_value}\n")
         self.assertTrue(ret_value['RESULT'])
 
+    # ДЕЛАЕМ ЗАЯВКУ АКТИВНОЙ, ИМИТИРУЕМ ВЫДАЧУ, БЛОКИРУЕМ
     def test_004_unblock_guest(self):
         """ Разблокировать заявку на Гостя """
 
@@ -116,9 +115,7 @@ class TestRequestKus(unittest.TestCase):
         except Exception as ex:
             ret_value['DESC'] = str(ex)
 
-        print("TEST: 004")
-        print(ret_value)
-
+        print(f"\t{ret_value}\n")
         self.assertTrue(ret_value['RESULT'])
 
     def test_005_add_person(self):
@@ -138,7 +135,7 @@ class TestRequestKus(unittest.TestCase):
                     if ret_value['DATA'].get('RESULT') == 'SUCCESS':
                         ret_value['RESULT'] = True
 
-                        self.__class__.person_id = ret_value['DATA'].get("FID")
+                        self.__class__.person_id = ret_value['DATA'].get('DATA').get("FID")
                 else:
                     ret_value['DESC'] = f"Статус код: {result.status_code}"
 
@@ -147,39 +144,62 @@ class TestRequestKus(unittest.TestCase):
 
         else:
             ret_value['DESC'] = f"Guest fid: {self.__class__.guest_fid}"
-
-        print("TEST: 005")
-        print(ret_value)
-
+        print(f"\t{ret_value}\n")
         self.assertTrue(ret_value['RESULT'])
 
-    def test_006_block_guest(self):
+    def test_006_block_guest_with_tperson(self):
         """ Заблокировать заявку на Гостя """
 
-        ret_value = {"RESULT": False, "DESC": '', 'DATA': None}
+        self.test_003_block_guest()
 
-        url = f"http://127.0.0.1:8066/DoBlockGuest"
+    # ДЕЛАЕМ ЗАЯВКУ АКТИВНОЙ, ИМИТИРУЕМ ВЫДАЧУ и ВХОД, СТАВИМ БЛОК ПО ВЫХОДУ
+    #
+    # def test_007_unblock_guest(self):
+    #     """ Разблокировать заявку на Гостя """
+    #
+    #     self.test_004_unblock_guest()
+    #
+    # def test_008_add_person(self):
+    #     """ Имитация выданного пропуска """
+    #     self.test_005_add_person()
+    #
+    # def test_009_add_tpasses(self, station_id=FACE_STATION_ID_INPUT):
+    #     """ Имитация прохода без выхода """
+    #
+    #     ret_value = {"RESULT": False, "DESC": '', 'DATA': None}
+    #
+    #     url = f"http://127.0.0.1:8066/DoAddPassesGuest"
+    #
+    #     if self.__class__.guest_fid:
+    #         try:
+    #             result = requests.post(url, timeout=5, json={"FPersonID": self.__class__.person_id,
+    #                                                          "FStationID": station_id})
+    #
+    #             if result.status_code == 200:
+    #                 ret_value['DATA'] = result.json()
+    #
+    #                 if ret_value['DATA'].get('RESULT') == 'SUCCESS':
+    #                     ret_value['RESULT'] = True
+    #             else:
+    #                 ret_value['DESC'] = f"Статус код: {result.status_code}"
+    #
+    #         except Exception as ex:
+    #             ret_value['DESC'] = str(ex)
+    #
+    #     else:
+    #         ret_value['DESC'] = f"Guest fid: {self.__class__.guest_fid}"
+    #     print(f"\t{ret_value}\n")
+    #     self.assertTrue(ret_value['RESULT'])
+    #
+    # def test_010_block_guest_with_tperson(self):
+    #     """ Заблокировать заявку на Гостя """
+    #
+    #     self.test_003_block_guest()
 
-        try:
-            result = requests.post(url, timeout=5, json={"FAccountID": ACCOUNT_ID, "FID": REMOTE_ID})
-
-            if result.status_code == 200:
-                ret_value['DATA'] = result.json()
-
-                if ret_value['DATA'].get('RESULT') == 'SUCCESS':
-                    ret_value['RESULT'] = True
-            else:
-                ret_value['DESC'] = f"Статус код: {result.status_code}"
-
-        except Exception as ex:
-            ret_value['DESC'] = ex
-
-        print("TEST: 006")
-        print(ret_value)
-
-        self.assertTrue(ret_value['RESULT'])
+    # def test_011_out_guest(self):
+    #     """ Добавляем выход """
+    #     self.test_009_add_tpasses(FACE_STATION_ID_OUTPUT)
 
 
 if __name__ == '__main__':
     unittest.main()
-

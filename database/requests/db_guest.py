@@ -412,3 +412,28 @@ class CreateGuestDB:
             logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
+
+    @staticmethod  # Тестовая функция для проверки блокировки гостя
+    def add_pass_guest(station_id: int, person_id: int, logger: Logger) -> dict:
+        """ Имитация проход Гостя """
+
+        ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db()
+
+            with connection.cursor() as cur:
+                # Проверяем компанию на доступность
+                cur.execute(f"insert into vig_face.tpasses(FDateTimePass, FPersonID, FFaceStationID) "
+                            f"values (now(), {person_id}, {station_id})")
+
+                connection.commit()
+
+                ret_value['RESULT'] = "SUCCESS"
+
+        except Exception as ex:
+            ret_value['DESC'] = "Ошибка работы с базой данных"
+            logger.exception(f"Ошибка работы с базой данных: {ex}")
+
+        return ret_value
