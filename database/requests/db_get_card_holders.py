@@ -1,6 +1,3 @@
-import datetime
-import fdb
-
 from misc.logger import Logger
 from database.db_connection import connect_db, connect_fire_bird_db
 

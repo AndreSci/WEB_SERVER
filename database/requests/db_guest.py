@@ -203,7 +203,6 @@ class CreateGuestDB:
                 request_activity = cur.fetchall()
 
                 if len(request_activity) == 0:
-                    ret_value["status"] = "ACCESS_DENIED"
                     ret_value["DESC"] = "Компания/Аккаунт не найден(а) или имеет ограничения."
                     logger.add_log(f"WARNING\tCreateGuestDB.del_guest\tРегистрация заявки отклонена "
                                    f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
