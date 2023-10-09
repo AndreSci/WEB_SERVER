@@ -7,6 +7,8 @@ ACCESS_DENIED_REGISTRATION_DENIAL = 'registration_denial'
 IS_BLOCKED_CAR_IS_BLOCKED = 'car_is_blocked'
 WARNING_IS_EXIST = 'is_exist'
 
+EXCEPTION_DB_TXT = "Ошибка работы с базой данных"
+
 
 # Создаем строку для запроса в БД
 def do_request_str(last_name, first_name, middle_name, car_number, remote_id, activity,
@@ -138,8 +140,8 @@ class CreateGuestDB:
             connection.close()
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tCreateGuestDB.add_guest - Ошибка работы с базой данных: {ex}")
-            ret_value["desc"] = ERROR_ANY_ERROR
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            ret_value["desc"] = EXCEPTION_DB_TXT
 
         return ret_value
 
@@ -176,8 +178,8 @@ class CreateGuestDB:
             connection.close()
 
         except Exception as ex:
-            ret_value["DESC"] = "Ошибка работы с базой данных CreateGuestDB.get_photo"
-            logger.add_log(f"ERROR\tCreateGuestDB.get_photo\tОшибка работы с базой данных: {ex}")
+            ret_value["DESC"] = EXCEPTION_DB_TXT
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
@@ -279,8 +281,8 @@ class CreateGuestDB:
                         ret_value['DESC'] = f"Не удалось найти Заявку"
 
         except Exception as ex:
-            ret_value['DESC'] = "Ошибка работы с базой данных"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            ret_value['DESC'] = EXCEPTION_DB_TXT
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
@@ -320,8 +322,8 @@ class CreateGuestDB:
                         ret_value['DESC'] = f"Не удалось найти Заявку."
 
         except Exception as ex:
-            ret_value['DESC'] = "Ошибка работы с базой данных"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            ret_value['DESC'] = EXCEPTION_DB_TXT
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
@@ -374,8 +376,8 @@ class CreateGuestDB:
                         ret_value['DESC'] = f"Не удалось найти заявку по FRemoteID = {remote_id}"
 
         except Exception as ex:
-            ret_value['DESC'] = "Ошибка работы с базой данных"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            ret_value['DESC'] = EXCEPTION_DB_TXT
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
@@ -407,9 +409,9 @@ class CreateGuestDB:
                     ret_value['DESC'] = "Не удалось найти созданный пропуск."
 
         except Exception as ex:
-            ret_value['DESC'] = "Ошибка работы с базой данных"
-            print(ex)
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            ret_value['DESC'] = EXCEPTION_DB_TXT
+
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
@@ -427,7 +429,7 @@ class CreateGuestDB:
                 # Проверяем компанию на доступность
                 sql_str = f"insert into vig_face.tpasses(FDateTimePass, FPersonID, FFaceStationID) " \
                           f"values (now(), {person_id}, {station_id})"
-                print(sql_str)
+
                 cur.execute(sql_str)
 
                 connection.commit()
@@ -435,7 +437,7 @@ class CreateGuestDB:
                 ret_value['RESULT'] = "SUCCESS"
 
         except Exception as ex:
-            ret_value['DESC'] = "Ошибка работы с базой данных"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            ret_value['DESC'] = EXCEPTION_DB_TXT
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
