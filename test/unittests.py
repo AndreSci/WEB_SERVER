@@ -153,48 +153,48 @@ class TestRequestKus(unittest.TestCase):
         self.test_003_block_guest()
 
     # ДЕЛАЕМ ЗАЯВКУ АКТИВНОЙ, ИМИТИРУЕМ ВЫДАЧУ и ВХОД, СТАВИМ БЛОК ПО ВЫХОДУ
-    #
-    # def test_007_unblock_guest(self):
-    #     """ Разблокировать заявку на Гостя """
-    #
-    #     self.test_004_unblock_guest()
-    #
-    # def test_008_add_person(self):
-    #     """ Имитация выданного пропуска """
-    #     self.test_005_add_person()
-    #
-    # def test_009_add_tpasses(self, station_id=FACE_STATION_ID_INPUT):
-    #     """ Имитация прохода без выхода """
-    #
-    #     ret_value = {"RESULT": False, "DESC": '', 'DATA': None}
-    #
-    #     url = f"http://127.0.0.1:8066/DoAddPassesGuest"
-    #
-    #     if self.__class__.guest_fid:
-    #         try:
-    #             result = requests.post(url, timeout=5, json={"FPersonID": self.__class__.person_id,
-    #                                                          "FStationID": station_id})
-    #
-    #             if result.status_code == 200:
-    #                 ret_value['DATA'] = result.json()
-    #
-    #                 if ret_value['DATA'].get('RESULT') == 'SUCCESS':
-    #                     ret_value['RESULT'] = True
-    #             else:
-    #                 ret_value['DESC'] = f"Статус код: {result.status_code}"
-    #
-    #         except Exception as ex:
-    #             ret_value['DESC'] = str(ex)
-    #
-    #     else:
-    #         ret_value['DESC'] = f"Guest fid: {self.__class__.guest_fid}"
-    #     print(f"\t{ret_value}\n")
-    #     self.assertTrue(ret_value['RESULT'])
-    #
-    # def test_010_block_guest_with_tperson(self):
-    #     """ Заблокировать заявку на Гостя """
-    #
-    #     self.test_003_block_guest()
+
+    def test_007_del_new_guest(self):
+        """ Удалить заявку и создать новую для Гостя """
+        self.test_001_delete_guest()
+        self.test_002_create_guest()
+
+    def test_008_add_person(self):
+        """ Имитация выданного пропуска """
+        self.test_005_add_person()
+
+    def test_009_add_tpasses(self, station_id=FACE_STATION_ID_INPUT):
+        """ Имитация прохода без выхода """
+
+        ret_value = {"RESULT": False, "DESC": '', 'DATA': None}
+
+        url = f"http://127.0.0.1:8066/DoAddPassesGuest"
+
+        if self.__class__.guest_fid:
+            try:
+                result = requests.post(url, timeout=5, json={"FPersonID": self.__class__.person_id,
+                                                             "FStationID": station_id})
+
+                if result.status_code == 200:
+                    ret_value['DATA'] = result.json()
+
+                    if ret_value['DATA'].get('RESULT') == 'SUCCESS':
+                        ret_value['RESULT'] = True
+                else:
+                    ret_value['DESC'] = f"Статус код: {result.status_code}"
+
+            except Exception as ex:
+                ret_value['DESC'] = str(ex)
+
+        else:
+            ret_value['DESC'] = f"Guest fid: {self.__class__.guest_fid}"
+        print(f"\t{ret_value}\n")
+        self.assertTrue(ret_value['RESULT'])
+
+    def test_010_block_guest_with_tperson(self):
+        """ Заблокировать заявку на Гостя """
+
+        self.test_003_block_guest()
 
     # def test_011_out_guest(self):
     #     """ Добавляем выход """

@@ -206,8 +206,8 @@ def add_pass_guest():
 
             LOGGER.add_log(f"EVENT\troute/guest.DoAddPassesGuest\tПолучены данные: ({json_request})", print_it=False)
 
-            json_replay = CreateGuestDB.add_pass_guest(json_request.get('FPersonID'),
-                                                       json_request.get('FStationID'), LOGGER)
+            json_replay = CreateGuestDB.add_pass_guest(json_request.get('FStationID'),
+                                                       json_request.get('FPersonID'), LOGGER)
 
         else:
             LOGGER.add_log(f"ERROR\troute/guest.DoAddPassesGuest\tОшибка чтения Json: В запросе нет данных")

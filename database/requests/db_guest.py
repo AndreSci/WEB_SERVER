@@ -267,12 +267,13 @@ class CreateGuestDB:
                                     cur.execute(f"update vig_face.tperson "
                                                 f"set FBlockByOutput = 1 "
                                                 f"where FID = {person_fid}")
+                                    ret_value['RESULT'] = "SUCCESS"
 
                                 else:
                                     # Блокируем персону\карту и
                                     # устанавливаем в ответе флаг на удаления лица из терминала
                                     cur.execute(f"update vig_face.tperson "
-                                                f"set FActivity = 1 "
+                                                f"set FActivity = 0 "
                                                 f"where FID = {person_fid}")
                                     ret_value['FACE_DRIVER'] = True
 
@@ -406,9 +407,12 @@ class CreateGuestDB:
                 if cur.rowcount == 1:
                     ret_value['DATA'] = {"FID": res_person[0].get("FID")}
                     ret_value['RESULT'] = "SUCCESS"
+                else:
+                    ret_value['DESC'] = "Не удалось найти созданный пропуск."
 
         except Exception as ex:
             ret_value['DESC'] = "Ошибка работы с базой данных"
+            print(ex)
             logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
@@ -425,8 +429,10 @@ class CreateGuestDB:
 
             with connection.cursor() as cur:
                 # Проверяем компанию на доступность
-                cur.execute(f"insert into vig_face.tpasses(FDateTimePass, FPersonID, FFaceStationID) "
-                            f"values (now(), {person_id}, {station_id})")
+                sql_str = f"insert into vig_face.tpasses(FDateTimePass, FPersonID, FFaceStationID) " \
+                          f"values (now(), {person_id}, {station_id})"
+                print(sql_str)
+                cur.execute(sql_str)
 
                 connection.commit()
 
