@@ -181,14 +181,14 @@ def create_card_holder():
                 else:
                     LOGGER.add_log(f"WARNING\tDoCreateCardHolder "
                                    f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
-                                   f"JSON: {json_request}")
+                                   f"JSON: {json_create}")
 
                     json_replay["RESULT"] = 'ERROR'
                     json_replay['DATA'] = json_create["DATA"]
                     json_replay['DESC'] = json_create["DESC"]
 
             except Exception as ex:
-                LOGGER.add_log(f"ERROR\tDoCreateCardHolder ошибка обращения к интерфейсу Apacs3000: {ex}")
+                LOGGER.add_log(f"ERROR\tDoCreateCardHolder\tОшибка обращения к интерфейсу Apacs3000: {ex}")
                 json_replay["RESULT"] = "ERROR"
                 json_replay["DESC"] = "Ошибка в работе системы"
 

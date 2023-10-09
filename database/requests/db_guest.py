@@ -26,7 +26,7 @@ def do_request_str(last_name, first_name, middle_name, car_number, remote_id, ac
 
 
 class CreateGuestDB:
-    # Класс работы с гостем
+    """ Класс работы с гостем """
     @staticmethod
     def add_guest(data_on_pass: dict, logger: Logger) -> dict:
         """ принимает словарь с данными от on_pass и logger """

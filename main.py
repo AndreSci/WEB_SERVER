@@ -11,6 +11,9 @@ from routes.card_holder import card_holder_blue
 from routes.guest import guests_blue
 from routes.employee import employee_blue
 
+# unittest routes
+from routes.unittest_guest import unittest_guests_blue
+
 # IP_HOST_APACS = '192.168.15.10'
 
 app = Flask(__name__)  # Объявление сервера
@@ -23,6 +26,9 @@ app.register_blueprint(face_blue)
 app.register_blueprint(card_holder_blue)
 app.register_blueprint(guests_blue)
 app.register_blueprint(employee_blue)
+
+# unittests
+app.register_blueprint(unittest_guests_blue)
 
 
 def web_flask():
@@ -39,7 +45,7 @@ def web_flask():
     from misc.consts import SET_INI
 
     # Меняем имя терминала
-    ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {SET_INI['port']} - (use OpenCV)")
+    ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {SET_INI['port']} - (use OpenCV) v3")
 
     LOGGER.add_log(f"SUCCESS\tweb_flask\tСервер WEB_Flask начал свою работу")  # log
 
