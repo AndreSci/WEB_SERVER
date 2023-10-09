@@ -164,7 +164,7 @@ class TestRequestKus(unittest.TestCase):
         self.test_005_add_person()
 
     def test_009_add_tpasses(self, station_id=FACE_STATION_ID_INPUT):
-        """ Имитация прохода без выхода """
+        """ Имитация прохода вход """
 
         ret_value = {"RESULT": False, "DESC": '', 'DATA': None}
 
@@ -196,9 +196,31 @@ class TestRequestKus(unittest.TestCase):
 
         self.test_003_block_guest()
 
-    # def test_011_out_guest(self):
-    #     """ Добавляем выход """
-    #     self.test_009_add_tpasses(FACE_STATION_ID_OUTPUT)
+    # ДЕЛАЕМ ЗАЯВКУ АКТИВНОЙ, ИМИТИРУЕМ ВЫДАЧУ и ВХОД, СТАВИМ БЛОК ПО ВЫХОДУ
+
+    def test_011_del_new_guest(self):
+        """ Удалить заявку и создать новую для Гостя """
+        self.test_001_delete_guest()
+        self.test_002_create_guest()
+
+    def test_012_add_person(self):
+        """ Имитация выданного пропуска """
+        self.test_005_add_person()
+
+    def test_013_add_tpasses(self):
+        """ Имитация прохода вход """
+
+        self.test_009_add_tpasses()
+
+    def test_014_add_tpasses(self):
+        """ Имитация прохода выхода """
+
+        self.test_009_add_tpasses(FACE_STATION_ID_OUTPUT)
+
+    def test_015_block_guest_with_tperson(self):
+        """ Заблокировать заявку на Гостя """
+
+        self.test_003_block_guest()
 
 
 if __name__ == '__main__':

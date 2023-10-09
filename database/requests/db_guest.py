@@ -230,7 +230,6 @@ class CreateGuestDB:
                                        f"заявки с id = {remote_id}")
 
                     if len(guest_res) > 0:
-                        print(guest_res[0])
                         guest_fid = guest_res[0].get('FID')
 
                         # Получаем данные персоны\карты которую выдали
@@ -243,7 +242,7 @@ class CreateGuestDB:
                             ret_value['RESULT'] = "SUCCESS"
                         else:
                             connection.commit()
-                            print(res_person[0])
+
                             person_fid = res_person[0].get('FID')
                             ret_value['DATA'] = {'id': person_fid}
 
@@ -257,17 +256,13 @@ class CreateGuestDB:
                             res_tpasses = cur.fetchall()
 
                             if cur.rowcount == 0:
-                                ret_value['RESULT'] = "SUCCESS"
                                 ret_value['FACE_DRIVER'] = True
                             else:
-                                print(res_tpasses[0])
-
                                 if res_tpasses[0].get('FWayType') == 'Input':
                                     # Если последняя запись в БД является ВХОД, ставим метку заблокировать после выхода
                                     cur.execute(f"update vig_face.tperson "
                                                 f"set FBlockByOutput = 1 "
                                                 f"where FID = {person_fid}")
-                                    ret_value['RESULT'] = "SUCCESS"
 
                                 else:
                                     # Блокируем персону\карту и
@@ -279,6 +274,7 @@ class CreateGuestDB:
 
                                 connection.commit()
 
+                            ret_value['RESULT'] = "SUCCESS"
                     else:
                         ret_value['DESC'] = f"Не удалось найти Заявку"
 
