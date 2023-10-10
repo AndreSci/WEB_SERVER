@@ -1,20 +1,20 @@
 import requests
 import unittest
 
-REMOTE_ID = 11
-ACCOUNT_ID = 1001
+REMOTE_ID = 249223
+ACCOUNT_ID = 1419
 FACE_STATION_ID_INPUT = 45
 FACE_STATION_ID_OUTPUT = 46
 
 
 JSON_GUEST = {
-    "FAccountID": 1001,
+    "FAccountID": 1419,
     "FLastName": "Тест",
     "FFirstName": "Тест",
     "FDateFrom": "2023-10-04",
     "FDateTo": "2023-11-01",
     "FInviteCode": 123456,
-    "FRemoteID": 11,
+    "FRemoteID": 249223,
     "FPhone": "+79661140411"
 }
 

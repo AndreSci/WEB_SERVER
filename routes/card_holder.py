@@ -181,7 +181,7 @@ def create_card_holder():
                 else:
                     LOGGER.add_log(f"WARNING\tDoCreateCardHolder "
                                    f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
-                                   f"JSON: {json_create}")
+                                   f"JSON: {str(json_create)[:150]}...")
 
                     json_replay["RESULT"] = 'ERROR'
                     json_replay['DATA'] = json_create["DATA"]
