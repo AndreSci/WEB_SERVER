@@ -441,3 +441,67 @@ class CreateGuestDB:
             logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
+
+    @staticmethod
+    def change_time_access(account_id: int, remote_id: int, logger: Logger,
+                           time_from: str = None, time_to: str = None) -> dict:
+        """ Изменить время действие временного пропуска """
+
+        ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict(), 'FACE_DRIVER': False}
+
+        try:
+            # Создаем подключение
+            connection = connect_db()
+
+            with connection.cursor() as cur:
+                # Проверяем компанию на доступность
+                cur.execute(f"select * from sac3.taccount, sac3.tcompany "
+                            f"where FCompanyID = tcompany.FID "
+                            f"and taccount.FID = {account_id} "
+                            f"and tcompany.FActivity = 1 "
+                            f"and taccount.FActivity = 1")
+                request_activity = cur.fetchall()
+
+            if len(request_activity) == 0:
+                ret_value["DESC"] = "Компания/Аккаунт не найден(а) или имеет ограничения."
+                logger.add_log(f"WARNING\tCreateGuestDB.change_time_access\tРегистрация заявки отклонена "
+                               f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
+            else:
+                # Получаем данные активной заявки на гостя
+                cur.execute(f"select * from sac3.tguest "
+                            f"where FRemoteID = {remote_id} "
+                            f"and FAccountID = {account_id} "
+                            f"and FActivity = 1")
+
+                guest_res = cur.fetchall()
+
+                if len(guest_res) > 0:
+                    # Меняем дату
+                    # '2023-12-12 12:00:01' стиль времени
+                    if not time_from:
+                        time_from = guest_res[0].get('FDateFrom')
+                    if not time_to:
+                        time_to = guest_res[0].get('FDateTo')
+
+                    cur.execute(f"update sac3.tguest "
+                                f"set FDateFrom = '{time_from}', FDateTo= '{time_to}' "
+                                f"where FRemoteID = {remote_id} "
+                                f"and FAccountID = {account_id} "
+                                f"and FActivity = 1")
+                    connection.commit()
+
+                    if cur.rowcount == 1:
+                        ret_value['RESULT'] = "SUCCESS"
+                    else:
+                        ret_value["RESULT"] = "WARNING"
+                        ret_value['DESC'] = f"Внесено изменений: {cur.rowcount} (должно быть 1)"
+                        logger.event(f"В БД было внесено: {cur.rowcount}! Данные: remote_id: {remote_id} "
+                                     f"account_id: {account_id} time_from: {time_from} time_to: {time_to}")
+                else:
+                    ret_value['DESC'] = "Не удалось найти заявку"
+
+        except Exception as ex:
+            ret_value['DESC'] = EXCEPTION_DB_TXT
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+
+        return ret_value
