@@ -42,7 +42,8 @@ class TestRequestKus(unittest.TestCase):
 
         except Exception as ex:
             ret_value['DESC'] = str(ex)
-        print(f"\t{ret_value}\n")
+        # print(f"\t{ret_value}\n")
+
         self.assertTrue(ret_value['RESULT'])
 
     def test_002_create_guest(self):
@@ -67,7 +68,8 @@ class TestRequestKus(unittest.TestCase):
 
         except Exception as ex:
             ret_value['DESC'] = str(ex)
-        print(f"\t{ret_value}\n")
+        # print(f"\t{ret_value}\n")
+
         self.assertTrue(ret_value['RESULT'])
 
     def test_003_block_guest(self):
@@ -90,7 +92,8 @@ class TestRequestKus(unittest.TestCase):
 
         except Exception as ex:
             ret_value['DESC'] = str(ex)
-        print(f"\n{ret_value}\n")
+        # print(f"\n{ret_value}\n")
+
         self.assertTrue(ret_value['RESULT'])
 
     # ДЕЛАЕМ ЗАЯВКУ АКТИВНОЙ, ИМИТИРУЕМ ВЫДАЧУ, БЛОКИРУЕМ
@@ -115,7 +118,7 @@ class TestRequestKus(unittest.TestCase):
         except Exception as ex:
             ret_value['DESC'] = str(ex)
 
-        print(f"\t{ret_value}\n")
+        # print(f"\t{ret_value}\n")
         self.assertTrue(ret_value['RESULT'])
 
     def test_005_add_person(self):
@@ -144,7 +147,8 @@ class TestRequestKus(unittest.TestCase):
 
         else:
             ret_value['DESC'] = f"Guest fid: {self.__class__.guest_fid}"
-        print(f"\t{ret_value}\n")
+        # print(f"\t{ret_value}\n")
+
         self.assertTrue(ret_value['RESULT'])
 
     def test_006_block_guest_with_tperson(self):
@@ -188,7 +192,8 @@ class TestRequestKus(unittest.TestCase):
 
         else:
             ret_value['DESC'] = f"Guest fid: {self.__class__.guest_fid}"
-        print(f"\t{ret_value}\n")
+        # print(f"\t{ret_value}\n")
+
         self.assertTrue(ret_value['RESULT'])
 
     def test_010_block_guest_with_tperson(self):

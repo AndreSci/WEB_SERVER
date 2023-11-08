@@ -18,9 +18,9 @@ class CompanyDB:
 
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
                                 f"where FCompanyID = tcompany.FID "
-                                f"and taccount.FID = {account_id} "
+                                f"and taccount.FID = %s "
                                 f"and tcompany.FActivity = 1 "
-                                f"and taccount.FActivity = 1")
+                                f"and taccount.FActivity = 1", (account_id, ))
 
                 request_res = cur.fetchall()
 

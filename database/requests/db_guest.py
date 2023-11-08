@@ -69,17 +69,17 @@ class CreateGuestDB:
                 # Проверяем компанию на доступность
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
                                 f"where FCompanyID = tcompany.FID "
-                                f"and taccount.FID = {account_id} "
+                                f"and taccount.FID = %s "
                                 f"and tcompany.FActivity = 1 "
-                                f"and taccount.FActivity = 1")
+                                f"and taccount.FActivity = 1", (account_id, ))
                 request_activity = cur.fetchall()
 
                 # Если есть номер авто проверяем его в черном списке
                 if car_number:
                     cur.execute(f"select FID "
                                 f"from sac3.tblacklist "
-                                f"where FCarNumber = '{car_number}' "
-                                f"and FActivity = 1")
+                                f"where FCarNumber = %s "
+                                f"and FActivity = 1", (car_number, ))
                     is_blocked = cur.fetchall()
                 else:
                     is_blocked = list()
@@ -87,7 +87,7 @@ class CreateGuestDB:
                 # Проверяем ID на существования заявки
                 cur.execute(f"select FID "
                             f"from sac3.tguest "
-                            f"where FRemoteID = {remote_id}")
+                            f"where FRemoteID = %s", (remote_id, ))
                 is_exist = cur.fetchall()
 
                 if len(request_activity) == 0:
@@ -109,17 +109,19 @@ class CreateGuestDB:
                     ret_value["status"] = "IS_BLOCKED"
                     ret_value["desc"] = IS_BLOCKED_CAR_IS_BLOCKED
 
-                    # Загружаем данные в базу
+                    # Формируем запрос
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 0,
                                                     date_from, date_to, account_id, phone_number, invite_code)
+                    # Загружаем данные в базу
                     cur.execute(sql_request)
 
                     connection.commit()
                     logger.add_log(f"WARNING\tCreateGuestDB.add_guest - Номер {car_number} в черном списке.")
                 else:
-                    # Загружаем данные в базу
+                    # Формируем запрос
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
                                                     date_from, date_to, account_id, phone_number, invite_code)
+                    # Загружаем данные в базу
                     cur.execute(sql_request)
 
                     connection.commit()
@@ -127,7 +129,7 @@ class CreateGuestDB:
                     # Получаем FID для ответа
                     cur.execute(f"select FID "
                                 f"from sac3.tguest "
-                                f"where FRemoteID = {remote_id}")
+                                f"where FRemoteID = %s", (remote_id, ))
                     is_exist = cur.fetchall()
 
                     ret_value["data"] = is_exist[0]
@@ -156,7 +158,7 @@ class CreateGuestDB:
 
             with connection.cursor() as cur:
 
-                cur.execute(f"select * from sac3.tguest where FInviteCode = '{invite_code}'")
+                cur.execute(f"select * from sac3.tguest where FInviteCode = %s", (invite_code, ))
                 result = cur.fetchone()
 
                 if not result:
@@ -164,8 +166,8 @@ class CreateGuestDB:
                 else:
 
                     cur.execute(f"select * from vig_face.tperson where "
-                                f"FRemoteID = {result.get('FID')} "
-                                f"and ftag = 'Guest'")
+                                f"FRemoteID = %s "
+                                f"and ftag = 'Guest'", (result.get('FID'), ))
 
                     result = cur.fetchone()
 
@@ -199,9 +201,9 @@ class CreateGuestDB:
                 # Проверяем компанию на доступность
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
                             f"where FCompanyID = tcompany.FID "
-                            f"and taccount.FID = {account_id} "
+                            f"and taccount.FID = %s "
                             f"and tcompany.FActivity = 1 "
-                            f"and taccount.FActivity = 1")
+                            f"and taccount.FActivity = 1", (account_id, ))
                 request_activity = cur.fetchall()
 
                 if len(request_activity) == 0:
@@ -211,9 +213,9 @@ class CreateGuestDB:
                 else:
                     # Получаем данные активной заявки на гостя
                     cur.execute(f"select * from sac3.tguest "
-                                f"where FRemoteID = {remote_id} "
-                                f"and FAccountID = {account_id} "
-                                f"and FActivity = 1")
+                                f"where FRemoteID = %s "
+                                f"and FAccountID = %s "
+                                f"and FActivity = 1", (remote_id, account_id))
 
                     guest_res = cur.fetchall()
 
@@ -221,8 +223,8 @@ class CreateGuestDB:
                         # Блокируем заявку
                         cur.execute(f"update sac3.tguest "
                                     f"set FActivity = 0 "
-                                    f"where FRemoteID = {remote_id} "
-                                    f"and FAccountID = {account_id}")
+                                    f"where FRemoteID = %s "
+                                    f"and FAccountID = %s", (remote_id, account_id))
 
                     connection.commit()
 
@@ -235,8 +237,8 @@ class CreateGuestDB:
                         guest_fid = guest_res[0].get('FID')
 
                         # Получаем данные персоны\карты которую выдали
-                        cur.execute(f"select * from vig_face.tperson where FRemoteID = {guest_fid} "
-                                    f"and FActivity = 1 and FTag = 'Guest'")
+                        cur.execute(f"select * from vig_face.tperson where FRemoteID = %s "
+                                    f"and FActivity = 1 and FTag = 'Guest'", (guest_fid, ))
 
                         res_person = cur.fetchall()
 
@@ -250,10 +252,10 @@ class CreateGuestDB:
 
                             # Получаем данные прохода и определяем был ли ВХОД\ВЫХОД
                             cur.execute(f"select * from vig_face.tpasses, vig_face.tfacestation "
-                                        f"where FPersonID = {person_fid} "
+                                        f"where FPersonID = %s "
                                         f"and tfacestation.FID = FFaceStationID "
                                         f"order by FDateTimePass desc "
-                                        f"limit 1")
+                                        f"limit 1", (person_fid, ))
 
                             res_tpasses = cur.fetchall()
 
@@ -264,14 +266,14 @@ class CreateGuestDB:
                                     # Если последняя запись в БД является ВХОД, ставим метку заблокировать после выхода
                                     cur.execute(f"update vig_face.tperson "
                                                 f"set FBlockByOutput = 1 "
-                                                f"where FID = {person_fid}")
+                                                f"where FID = %s", (person_fid, ))
 
                                 else:
                                     # Блокируем персону\карту и
                                     # устанавливаем в ответе флаг на удаления лица из терминала
                                     cur.execute(f"update vig_face.tperson "
                                                 f"set FActivity = 0 "
-                                                f"where FID = {person_fid}")
+                                                f"where FID = %s", (person_fid, ))
                                     ret_value['FACE_DRIVER'] = True
 
                                 connection.commit()
@@ -300,9 +302,9 @@ class CreateGuestDB:
                 # Проверяем компанию на доступность
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
                             f"where FCompanyID = tcompany.FID "
-                            f"and taccount.FID = {account_id} "
+                            f"and taccount.FID = %s "
                             f"and tcompany.FActivity = 1 "
-                            f"and taccount.FActivity = 1")
+                            f"and taccount.FActivity = 1", (account_id, ))
                 request_activity = cur.fetchall()
 
                 if len(request_activity) == 0:
@@ -311,8 +313,8 @@ class CreateGuestDB:
                                    f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
                 else:
                     cur.execute(f"update sac3.tguest set FActivity = 1 "
-                                f"where FRemoteID = {remote_id} "
-                                f"and FAccountID = {account_id}")
+                                f"where FRemoteID = %s "
+                                f"and FAccountID = %s", (remote_id, account_id))
 
                     connection.commit()
 
@@ -341,9 +343,9 @@ class CreateGuestDB:
                 # Проверяем компанию на доступность
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
                             f"where FCompanyID = tcompany.FID "
-                            f"and taccount.FID = {account_id} "
+                            f"and taccount.FID = %s "
                             f"and tcompany.FActivity = 1 "
-                            f"and taccount.FActivity = 1")
+                            f"and taccount.FActivity = 1", (account_id, ))
                 request_activity = cur.fetchall()
 
                 if len(request_activity) == 0:
@@ -353,12 +355,12 @@ class CreateGuestDB:
                 else:
 
                     cur.execute(f"select * from sac3.tguest "
-                                f"where FRemoteID = {remote_id} and FAccountID = {account_id};")
+                                f"where FRemoteID = %s and FAccountID = %s;", (remote_id, account_id))
 
                     if cur.rowcount == 1:
 
-                        cur.execute(f"delete from sac3.tguest where FRemoteID = {remote_id} "
-                                    f"and FAccountID = {account_id};")
+                        cur.execute(f"delete from sac3.tguest where FRemoteID = %s "
+                                    f"and FAccountID = %s;", (remote_id, account_id))
 
                         connection.commit()
                         ret_value['RESULT'] = "SUCCESS"
@@ -394,7 +396,7 @@ class CreateGuestDB:
             with connection.cursor() as cur:
                 # Проверяем компанию на доступность
                 cur.execute(f"insert into vig_face.tperson(FName, FRemoteID, FDateCreate) "
-                            f"values ('{f_name}', {remote_id}, now())")
+                            f"values (%s, %s, now())", (f_name, remote_id))
 
                 connection.commit()
 
@@ -428,9 +430,9 @@ class CreateGuestDB:
             with connection.cursor() as cur:
                 # Проверяем компанию на доступность
                 sql_str = f"insert into vig_face.tpasses(FDateTimePass, FPersonID, FFaceStationID) " \
-                          f"values (now(), {person_id}, {station_id})"
+                          f"values (now(), %s, %s)"
 
-                cur.execute(sql_str)
+                cur.execute(sql_str, (person_id, station_id))
 
                 connection.commit()
 
@@ -457,9 +459,9 @@ class CreateGuestDB:
                 # Проверяем компанию на доступность
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
                             f"where FCompanyID = tcompany.FID "
-                            f"and taccount.FID = {account_id} "
+                            f"and taccount.FID = %s "
                             f"and tcompany.FActivity = 1 "
-                            f"and taccount.FActivity = 1")
+                            f"and taccount.FActivity = 1", (account_id, ))
                 request_activity = cur.fetchall()
 
             if len(request_activity) == 0:
@@ -469,9 +471,9 @@ class CreateGuestDB:
             else:
                 # Получаем данные активной заявки на гостя
                 cur.execute(f"select * from sac3.tguest "
-                            f"where FRemoteID = {remote_id} "
-                            f"and FAccountID = {account_id} "
-                            f"and FActivity = 1")
+                            f"where FRemoteID = %s "
+                            f"and FAccountID = %s "
+                            f"and FActivity = 1", (remote_id, account_id))
 
                 guest_res = cur.fetchall()
 
@@ -484,10 +486,10 @@ class CreateGuestDB:
                         time_to = guest_res[0].get('FDateTo')
 
                     cur.execute(f"update sac3.tguest "
-                                f"set FDateFrom = '{time_from}', FDateTo= '{time_to}' "
-                                f"where FRemoteID = {remote_id} "
-                                f"and FAccountID = {account_id} "
-                                f"and FActivity = 1")
+                                f"set FDateFrom = %s, FDateTo= %s "
+                                f"where FRemoteID = %s "
+                                f"and FAccountID = %s "
+                                f"and FActivity = 1", (time_from, time_to, remote_id, account_id))
                     connection.commit()
 
                     if cur.rowcount == 1:
