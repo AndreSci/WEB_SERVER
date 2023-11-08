@@ -1,0 +1,18 @@
+
+Вызов - http://127.0.0.1:8066/DoBlockGuest
+(POST)
+
+json данные
+{
+    "FAccountID": 1111,
+    "FID": 121212 (remote_id заявки)
+    "DateTimeFrom": "2023-11-04 00:12:13"   (Не обязательный параметр)
+    "DateTomeTo": "2023-12-04 12:00:00"     (Не обязательный параметр)
+}
+
+отвечает json
+{"RESULT": "", "DESC": "", "DATA": ""}
+
+"RESULT":   SUCCESS
+            ERROR - описание ошибки в ответе "DESC"
+            WARNING - описание в ответе "DESC"

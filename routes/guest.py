@@ -99,3 +99,30 @@ def block_guest():
             json_replay['DESC'] = ERROR_READ_JSON
 
     return json_replay
+
+
+@guests_blue.route('/DoChangeTimeAccess', methods=['POST'])
+def change_access_time():
+    json_replay = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}
+
+    user_ip = request.remote_addr
+    LOGGER.add_log(f"EVENT\troute/guest.DoChangeTimeAccess\tЗапрос от ip: {user_ip}", print_it=False)
+
+    # Проверяем разрешен ли доступ для IP
+    if not ALLOW_IP.find(user_ip, LOGGER):
+        json_replay['DESC'] = ERROR_ACCESS_IP
+    else:
+        if request.is_json:
+            json_request = request.json
+
+            LOGGER.add_log(f"EVENT\troute/guest.DoChangeTimeAccess\tПолучены данные: ({json_request})", print_it=False)
+
+            # Создаем запрос к БД с просьбой изменить дату доступа гостя
+            json_replay = CreateGuestDB.change_time_access(json_request.get('FAccountID'), json_request.get('FID'),
+                                                           LOGGER, json_request.get('DateTimeFrom'),
+                                                           json_request.get('DateTimeTo'))
+        else:
+            LOGGER.add_log(f"ERROR\troute/guest.DoChangeTimeAccess\tОшибка чтения Json: В запросе нет данных")
+            json_replay['DESC'] = ERROR_READ_JSON
+
+    return json_replay
