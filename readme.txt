@@ -1,15 +1,25 @@
-Вся документация находится в папке readme
-
 Требуется установленная база данных FIREBIRD на сервере, где запущен сервис WEB_INTERFACE
-файл установки - Firebird-2.5.0.26074_1_x64.exe в папке readme
+файл установки - Firebird-2.5.0.26074_1_x64.exe в папке "setup"
 
-Библиотеки которые нужно подгрузить
+------------------------------------------------------
+!Вся документация находится в папке readme:
+Методы:
+- Защита
+DoAddIP - Добавить новый IP для доступа к API
 
-requests
-flask
-configparser
-pymysql
-fdb
+- Сотрудники
+DoCreateCardHolder - Создать пропуск сотруднику
+DoGetCardHolders - Получить список сотрудников компании
+DoDeleteCardHolder - Заблокировать карту сотрудника
 
-OpenCV версия
-pip install opencv-python==4.5.5.64
+- Терминал лиц
+DoAddEmployeePhoto - Добавить фото сотруднику
+DoAddPerson - Добавить персону в терминал
+DoAddPhoto - Добавить фото в терминал
+DoDeletePhoto - Удалить фото из терминала
+DoUpdatePerson - Обновить данные персоны
+
+- Гости
+DoBlockGuest - Заблокировать заявку на гостя
+DoChangeTimeAccess - Изменить период действия пропуска на гостя
+DoCreateGuest - Создать заявку на гостя
