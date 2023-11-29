@@ -22,6 +22,7 @@ class BColors:
 
 
 def test_dir(log_path) -> bool:
+    """ Функция проверки папки куда сохраняются логи """
     ret_value = True
 
     try:
@@ -36,6 +37,7 @@ def test_dir(log_path) -> bool:
 
 
 class SingletonBaseClass(type):
+    """ Шаблон сингелтон (объяви один раз и пользуйся во всей программе одним экземпляром)"""
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -47,12 +49,15 @@ class SingletonBaseClass(type):
 
 class Logger(metaclass=SingletonBaseClass):
     """ Класс вывода данных в консоль и запись в файл """
-    def __init__(self):
+    def __init__(self, log_path: str = None):
         self.font_color = False
         self.log_guard = threading.Lock()
+        if log_path:
+            global LOGGER_PATH
+            LOGGER_PATH = log_path
 
     def add_log(self, text: str, print_it=True):
-        """ Обшивает текст датой, табуляцией и переходом на новую строку"""
+        """ Обшивает текст датой, табуляцией и переходом на новую строку """
         ret_value = False
         try:
             today = datetime.datetime.today()
@@ -93,9 +98,8 @@ class Logger(metaclass=SingletonBaseClass):
 
         return ret_value
 
-    def event(self, text: str, print_it=True):
-        # возьми текущий фрейм объект (frame object)
-        current_frame = inspect.currentframe()
+    def __rebuild_msg(self, text: str, print_it=True, type_mess="INFO", current_frame=inspect.currentframe()):
+        """ Метод изменяет текст в стандартный стиль """
 
         # получи фрейм объект, который его вызвал
         caller_frame = current_frame.f_back
@@ -106,9 +110,28 @@ class Logger(metaclass=SingletonBaseClass):
         # и получи его имя
         code_obj_name = code_obj.co_name
 
-        return self.add_log(f"EVENT\t{code_obj_name}\t{text}", print_it)
+        return self.add_log(f"{type_mess}\t{code_obj_name}\t{text}", print_it)
+
+    def event(self, text: str, print_it=True):
+        """ Метод изменяет текст в стандартный стиль """
+        # возьми текущий фрейм объект (frame object)
+        current_frame = inspect.currentframe()
+        return self.__rebuild_msg(text, print_it, "EVENT", current_frame)
+
+    def warning(self, text: str, print_it=True):
+        """ Метод изменяет текст в стандартный стиль """
+        # возьми текущий фрейм объект (frame object)
+        current_frame = inspect.currentframe()
+        return self.__rebuild_msg(text, print_it, "WARNING", current_frame)
+
+    def error(self, text: str, print_it=True):
+        """ Метод изменяет текст в стандартный стиль """
+        # возьми текущий фрейм объект (frame object)
+        current_frame = inspect.currentframe()
+        return self.__rebuild_msg(text, print_it, "ERROR", current_frame)
 
     def exception(self, text: str, print_it=True):
+        """ Метод изменяет текст и указывает где была вызвана ошибка(traceback) """
         # возьми текущий фрейм объект (frame object)
         current_frame = inspect.currentframe()
 
