@@ -12,17 +12,20 @@ EXCEPTION_DB_TXT = "Ошибка работы с базой данных"
 
 # Создаем строку для запроса в БД
 def do_request_str(last_name, first_name, middle_name, car_number, remote_id, activity,
-                   date_from, date_to, account_id, phone_number, invite_code) -> str:
+                   date_from, date_to, account_id, phone_number, invite_code, block_by_out=0) -> str:
+
+    if not block_by_out:  # Заглушка
+        block_by_out = 0
 
     req_str = f"insert into sac3.tguest(" \
                 f"FLastName, FFirstName, FMiddleName, " \
                 f"FCarNumber, FRemoteID, FActivity, " \
                 f"FDateCreate, FDateFrom, FDateTo, " \
-                f"FAccountID, FPhone, FInviteCode) " \
+                f"FAccountID, FPhone, FInviteCode, FBlockByOutput) " \
                 f"values (" \
                 f"'{last_name}', '{first_name}', '{middle_name}', '{car_number}', " \
                 f"{remote_id}, '{activity}', now(), " \
-                f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code})"
+                f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code}, {block_by_out})"
 
     return req_str
 
@@ -50,6 +53,9 @@ class CreateGuestDB:
 
         # phone_number = data_on_pass["FPhone"]
         phone_number = data_on_pass.get("FPhone")
+
+        # Block by output (метод разового прохода)
+        block_by_out = data_on_pass.get("FBlockByOutput")
 
         if not middle_name:
             middle_name = ''
@@ -111,7 +117,8 @@ class CreateGuestDB:
 
                     # Формируем запрос
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 0,
-                                                    date_from, date_to, account_id, phone_number, invite_code)
+                                                    date_from, date_to, account_id, phone_number, invite_code,
+                                                 block_by_out)
                     # Загружаем данные в базу
                     cur.execute(sql_request)
 
@@ -120,7 +127,8 @@ class CreateGuestDB:
                 else:
                     # Формируем запрос
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
-                                                    date_from, date_to, account_id, phone_number, invite_code)
+                                                    date_from, date_to, account_id, phone_number, invite_code,
+                                                 block_by_out)
                     # Загружаем данные в базу
                     cur.execute(sql_request)
 
