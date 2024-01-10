@@ -7,14 +7,14 @@ class BSHelper:
     def __init__(self, set_ini):
         self.settings_ini = set_ini
 
-    def get_card_holder(self, res_json: dict, logger: Logger) -> dict:
+    def get_card_holder(self, res_json: dict, activity: int, logger: Logger) -> dict:
         """ Отправляем запрос в base_helper, где добавляется заявка и возвращает её ID """
         result = dict()
-
+        # BASE HELPER САМ СОЗДАЁТ ЗАПИСЬ В tperson ПРИ ЗАПРОСЕ
         try:
             res_base_helper = requests.get(f'http://{self.settings_ini["hl_host"]}:'
                                            f'{self.settings_ini["hl_port"]}/getcardholderbyfid',
-                                           params={"fid": res_json["id"]})
+                                           params={"fid": res_json["id"], "activity": activity})
 
             res_base_helper = res_base_helper.json()
             # print(res_base_helper)

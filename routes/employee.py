@@ -30,15 +30,25 @@ def add_employee_photo():
 
             con_helper = BSHelper(ConstControl.get_set_ini())
 
+            # Если нет фото, считается что сотрудник сам добавить фото позднее
+            activity = 0
+
+            try:  # Проверяем наличие фото для активации сотрудника в БД
+                if len(res_json['img64']) > 100:
+                    activity = 1
+
+            except Exception as ex:
+                LOGGER.exception(f"Не удалось проверить фото! {ex}")
+
             # Отправляем запрос на получение данных сотрудника
-            res_base_helper = con_helper.get_card_holder(res_json, LOGGER)
+            res_base_helper = con_helper.get_card_holder(res_json, activity, LOGGER)
             result = res_base_helper.get("RESULT")
 
             LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\tПосле BaseHelper "
                            f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}",
                            print_it=False)
 
-            if result == "SUCCESS" or result == "WARNING":
+            if result == "SUCCESS" or result == "WARNING" and activity == 1:
 
                 res_json["id"] = res_base_helper["DATA"].get("id")
                 res_json["name"] = res_base_helper["DATA"].get("name")
@@ -69,6 +79,8 @@ def add_employee_photo():
 
                     # Сохраняем фото в log_path где папка photo_errors
                     ErrorPhoto.save(res_json, ConstControl.get_set_ini().get('log_path'), LOGGER)
+            elif result == "SUCCESS" or result == "WARNING" and activity == 0:
+                result = "NO_FACE"
 
             if result == "EXCEPTION":
                 pass
@@ -114,6 +126,9 @@ def add_employee_photo():
                 LOGGER.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
             elif result == "NotDefined":
                 LOGGER.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+            elif result == "NO_FACE":
+                LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\t"
+                               f"Создан сотрудник без фотографии с флагом activity = 0: {res_json}")
             else:
                 pass
 

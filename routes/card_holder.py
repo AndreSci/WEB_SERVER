@@ -137,6 +137,7 @@ def create_card_holder():
                 car_number = str(car_number).upper().replace(' ', '')
 
             try:
+                # Создаем сотрудника через APACS3000
                 res = requests.get(f'http://{ConstControl.get_set_ini().get("host_apacs_i")}:'
                                    f'{ConstControl.get_set_ini().get("port_apacs_i")}/CreateEmployee'
                                    f'?First_Name={first_name}'
@@ -233,6 +234,7 @@ def delete_card_holder():
                            f"inn: {str_inn})", print_it=False)
 
             try:
+                # Удаляем сотрудника из APACS3000
                 res = requests.delete(f'http://{ConstControl.get_set_ini().get("host_apacs_i")}:'
                                       f'{ConstControl.get_set_ini().get("port_apacs_i")}/DeleteEmployee'
                                       f'?INN={str_inn}'
