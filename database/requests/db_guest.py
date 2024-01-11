@@ -515,3 +515,27 @@ class CreateGuestDB:
             logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
+
+    @staticmethod
+    def check_invite_code(invite_code: int, logger: Logger) -> dict:
+
+        ret_value = {"RESULT": False, "DESC": '', 'DATA': list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db()
+
+            with connection.cursor() as cur:
+
+                cur.execute(f"select * from sac3.tguest where FInviteCode = %s and FDateTo >= now()", (invite_code, ))
+                result = cur.fetchone()
+
+                if not result:
+                    ret_value["DESC"] = f"InviteCode свободен"
+                    ret_value['RESULT'] = True
+
+        except Exception as ex:
+            ret_value["DESC"] = EXCEPTION_DB_TXT
+            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+
+        return ret_value

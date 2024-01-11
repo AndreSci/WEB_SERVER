@@ -37,7 +37,7 @@ def test_dir(log_path) -> bool:
 
 
 class SingletonBaseClass(type):
-    """ Шаблон сингелтон (объяви один раз и пользуйся во всей программе одним экземпляром)"""
+    """ Шаблон синглетом (объяви один раз и пользуйся во всей программе одним экземпляром)"""
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -80,7 +80,7 @@ class Logger(metaclass=SingletonBaseClass):
                     # if print_it:
                     #     print(date_time + "\t" + text)
                     if print_it:
-                        if 'ERROR' == text[:5]:
+                        if 'EXCEPTION' == text[:9] or 'ERROR' == text[:5]:
                             print(f"{BColors.col_fail}{date_time}\t{text}{BColors.col_endc}")
                         elif 'WARNING' == text[:7]:
                             print(f"{BColors.col_warning}{date_time}\t{text}{BColors.col_endc}")
@@ -111,6 +111,12 @@ class Logger(metaclass=SingletonBaseClass):
         code_obj_name = code_obj.co_name
 
         return self.add_log(f"{type_mess}\t{code_obj_name}\t{text}", print_it)
+
+    def info(self, text: str, print_it=True):
+        """ Метод изменяет текст в стандартный стиль """
+        # возьми текущий фрейм объект (frame object)
+        current_frame = inspect.currentframe()
+        return self.__rebuild_msg(text, print_it, "INFO", current_frame)
 
     def event(self, text: str, print_it=True):
         """ Метод изменяет текст в стандартный стиль """

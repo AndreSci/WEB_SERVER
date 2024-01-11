@@ -1,3 +1,4 @@
+""" Тесты для проверки запросов на ГОСТЯ """
 import requests
 import unittest
 

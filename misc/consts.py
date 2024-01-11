@@ -12,6 +12,8 @@ ERROR_ON_SERVER = 'server_error'
 CLASS_SET_INI = SettingsIni()
 SET_INI = dict()
 
+GUEST_DAYS = 3  # Кол-во дней действия заявки на гостя
+
 
 class ConstControl:
     @staticmethod

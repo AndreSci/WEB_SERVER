@@ -1,13 +1,46 @@
 import requests
+import datetime
 from flask import Blueprint, request, jsonify
 from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ConstControl
 from misc.allowed_words import convert_word
 from database.requests.db_company import CompanyDB
 from database.requests.db_get_card_holders import CardHoldersDB
+from misc.consts import GUEST_DAYS
 
 
 card_holder_blue = Blueprint('card_holder_blue', __name__, template_folder='templates', static_folder='static')
 
+
+class JsonGuest:
+    def __init__(self):
+        self.account_id = 0
+        self.last_name = ''
+        self.first_name = ''
+        self.middle_name = ''
+        self.car_number = ''
+        self.date_from = datetime.datetime.now().strftime("%d-%m-%y")
+        self.date_to = (datetime.datetime.now() + datetime.timedelta(days=GUEST_DAYS)).strftime("%d-%m-%y")
+        self.invite_code = 0
+        self.remote_id = 0
+        self.phone = ''
+        self.inn = ''
+
+    def take_json_guest(self) -> dict:
+
+        json_guest = {
+            "FAccountID": self.account_id,
+            "FLastName": self.last_name,
+            "FFirstName": self.first_name,
+            "FMiddleName": self.middle_name,
+            "FCarNumber": self.car_number,
+            "FDateFrom": self.date_from,
+            "FDateTo": self.date_to,
+            "FInviteCode": self.invite_code,
+            "FRemoteID": self.remote_id,
+            "FPhone": self.phone
+        }
+
+        return json_guest
 
 @card_holder_blue.route('/DoGetCardHolders', methods=['GET'])
 def get_card_holder():
@@ -91,10 +124,12 @@ def create_card_holder():
     """ Добавляет сотрудника в БД Apacs3000,\n
     запрашивает добавление пропуска по лицу через requests в DoAddEmployeePhoto"""
 
+    class_guest = JsonGuest()
+
     json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoCreateCardHolder запрос от ip: {user_ip}", print_it=False)
+    LOGGER.info(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -108,43 +143,43 @@ def create_card_holder():
             json_request = request.json
 
             # исправляем текст
-            first_name = convert_word(json_request.get("First_Name"))
-            last_name = convert_word(json_request.get("Last_Name"))
-            middle_name = convert_word(json_request.get("Middle_Name"))
-            str_inn = convert_word(json_request.get("inn"))
-            car_number = convert_word(json_request.get("Car_Number"))
+            class_guest.first_name = convert_word(json_request.get("First_Name"))
+            class_guest.last_name = convert_word(json_request.get("Last_Name"))
+            class_guest.middle_name = convert_word(json_request.get("Middle_Name"))
+            class_guest.inn = convert_word(json_request.get("inn"))
+            class_guest.car_number = convert_word(json_request.get("Car_Number"))
             photo_img64 = 0
 
             try:
                 photo_img64 = len(json_request['img64'])
             except Exception as ex:
-                LOGGER.add_log(f"ERROR\tDoCreateCardHolder\tОшибка подсчета размера фотографии img64: {ex}")
+                LOGGER.exception(f"Ошибка подсчета размера фотографии img64: {ex}")
 
             LOGGER.add_log(f"EVENT\tDoCreateCardHolder\tПолучены данные: ("
-                           f"First_Name: {first_name} "
-                           f"Last_Name: {last_name} "
-                           f"Middle_Name: {middle_name} "
-                           f"inn: {str_inn} "
-                           f"Car_Number: {car_number} "
+                           f"First_Name: {class_guest.first_name} "
+                           f"Last_Name: {class_guest.last_name} "
+                           f"Middle_Name: {class_guest.middle_name} "
+                           f"inn: {class_guest.inn} "
+                           f"Car_Number: {class_guest.car_number} "
                            f"img64_size: {photo_img64})", print_it=False)
 
-            if not middle_name:
-                middle_name = ''
+            if not class_guest.middle_name:
+                class_guest.middle_name = ''
 
-            if not car_number:
-                car_number = ''
+            if not class_guest.car_number:
+                class_guest.car_number = ''
             else:
-                car_number = str(car_number).upper().replace(' ', '')
+                class_guest.car_number = str(class_guest.car_number).upper().replace(' ', '')
 
             try:
                 # Создаем сотрудника через APACS3000
                 res = requests.get(f'http://{ConstControl.get_set_ini().get("host_apacs_i")}:'
                                    f'{ConstControl.get_set_ini().get("port_apacs_i")}/CreateEmployee'
-                                   f'?First_Name={first_name}'
-                                   f'&Last_Name={last_name}'
-                                   f'&Middle_Name={middle_name}'
-                                   f'&INN={str_inn}'
-                                   f'&Car_Number={car_number}')
+                                   f'?First_Name={class_guest.first_name}'
+                                   f'&Last_Name={class_guest.last_name}'
+                                   f'&Middle_Name={class_guest.middle_name}'
+                                   f'&INN={class_guest.inn}'
+                                   f'&Car_Number={class_guest.car_number}')
 
                 json_create = res.json()
 
@@ -153,6 +188,7 @@ def create_card_holder():
                     sys_addr_id = json_create['DATA']['sysAddrID']
                     sys_addr_id = sys_addr_id[8:]
 
+                    # TODO сделать классом отправку json
                     json_empl = dict()
 
                     json_empl['id'] = int(sys_addr_id, 16)
@@ -167,7 +203,7 @@ def create_card_holder():
 
                         if res_add_photo['RESULT'] == "SUCCESS":
                             json_replay['DESC'] = "Успешно создан сотрудник"
-                            LOGGER.add_log(f"EVENT\tDoCreateCardHolder Успешно создан сотрудник для ИНН{str_inn}")
+                            LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
                         else:
                             json_replay['RESULT'] = "WARNING"
                             json_replay['DESC'] = "Сотрудник создан. " \
@@ -180,7 +216,7 @@ def create_card_holder():
                                               "не удалось отправить запрос на добавление фото и открытие пропуска"
 
                 else:
-                    LOGGER.add_log(f"WARNING\tDoCreateCardHolder "
+                    LOGGER.add_log(f"WARNING\tDoCreateCardHolder\t"
                                    f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
                                    f"JSON: {str(json_create)[:150]}...")
 
