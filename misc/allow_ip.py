@@ -30,9 +30,9 @@ class AllowedIP:
                     ret_value = True
 
                 except KeyError as ex:
-                    logger.add_log(f"ERROR\tAllowedIP.read_file - Ошибка по ключу словаря: {ex}")
+                    logger.exception(f"Ошибка по ключу словаря: {ex}")
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tAllowedIP.read_file - Exception:{ex}")
+                    logger.exception(f"Exception: {ex}")
 
         return ret_value
 
@@ -72,8 +72,8 @@ class AllowedIP:
 
                     ret_value = True
 
-                    logger.add_log(f"EVENT\tAllowedIP.add_ip - {new_ip} добавлен в систему со значением {activity} ")
+                    logger.event(f"{new_ip} добавлен в систему со значением {activity} ")
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tОшибка открытия или записи в файл - {ex}")
+                    logger.exception(f"Ошибка открытия или записи в файл - {ex}")
 
         return ret_value
