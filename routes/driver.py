@@ -15,7 +15,7 @@ def add_person():
     json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoAddGuest запрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -36,7 +36,7 @@ def add_person():
 
         except Exception as ex:
             json_replay['DESC'] = "Ошибка чтения Json из запроса"
-            LOGGER.add_log(f"ERROR\tDoAddGuest\tИсключение вызвало чтение Json из запроса {ex}")
+            LOGGER.exception(f"Исключение вызвало чтение Json из запроса {ex}")
 
     return jsonify(json_replay)
 
@@ -46,7 +46,7 @@ def update_guest_driver():
     json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoUpdateGuest\tзапрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -67,7 +67,7 @@ def update_guest_driver():
 
         except Exception as ex:
             json_replay['DESC'] = "Ошибка чтения Json из запроса"
-            LOGGER.add_log(f"ERROR\tDoUpdateGuest\tИсключение вызвало чтение Json из запроса {ex}")
+            LOGGER.exception(f"Исключение вызвало чтение Json из запроса {ex}")
 
     return jsonify(json_replay)
 
@@ -77,7 +77,7 @@ def add_new_photo_driver():
     json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoAddPhoto запрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -98,6 +98,6 @@ def add_new_photo_driver():
 
         except Exception as ex:
             json_replay['DESC'] = "Ошибка чтения Json из запроса"
-            LOGGER.add_log(f"ERROR\tDoAddPhoto Исключение вызвало чтение Json из запроса {ex}")
+            LOGGER.exception(f"Исключение вызвало чтение Json из запроса {ex}")
 
     return jsonify(json_replay)
