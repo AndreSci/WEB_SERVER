@@ -31,7 +31,7 @@ class FlipImg:
             height = height_old = image.size[1]
 
         except Exception as ex:
-            logger.add_log(f"WARNING\tFlipImg.convert_img\tНе удалось открыть фото из запроса: {ex}")
+            logger.exception(f"Не удалось открыть фото из запроса: {ex}")
 
         if width >= max_size or height >= max_size:
 
@@ -86,10 +86,9 @@ class FlipImg:
                     # Разворот на 270
                     image = image.rotate(90, expand=True)
             except KeyError as ex:
-                logger.add_log(f"WARNING\tFlipImg.convert_img\t"
-                               f"Ошибка работы с метаданными, нет ключа в словаре: {ex}", print_it=False)
+                logger.exception(f"Ошибка работы с метаданными, нет ключа в словаре: {ex}", print_it=False)
             except Exception as ex:
-                logger.add_log(f"WARNING\tFlipImg.convert_img\tНе удалось получить метаданными: {ex}", print_it=False)
+                logger.exception(f"Не удалось получить метаданными: {ex}", print_it=False)
 
             # image.save(save_url)
 
@@ -103,7 +102,7 @@ class FlipImg:
 
                 it_saved = True
             except Exception as ex:
-                logger.add_log(f"ERROR\tFlipImg.convert_img\tНе удалось создать и сохранить файл в папку ./temp: {ex}")
+                logger.exception(f"Не удалось создать и сохранить файл в папку ./temp: {ex}")
 
             if it_saved:
                 with open(f"./temp/{user_id}_img.jpg", 'rb') as file:
