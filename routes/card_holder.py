@@ -51,7 +51,7 @@ def get_card_holder():
     """ Функция возвращает список сотрудников компании """
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoGetCardHolders запрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -69,16 +69,14 @@ def get_card_holder():
             json_request['FINN'] = request.args.get("FINN")
 
         if not json_request['FAccountID']:
-            LOGGER.add_log(f"ERROR\tDoGetCardHolders - Не удалось прочитать args/data из request")
+            LOGGER.error(f"Не удалось прочитать args/data из request")
             json_replay["DESC"] = "Ошибка. Не удалось прочитать args/data из request."
         else:
 
             account_id = json_request.get("FAccountID")
             finn = json_request.get("FINN")
 
-            LOGGER.add_log(f"EVENT\tDoGetCardHolders\tПолучены данные: ("
-                           f"FINN: {finn} "
-                           f"FAccountID: {account_id})", print_it=False)
+            LOGGER.info(f"Получены данные: (FINN: {finn} - FAccountID: {account_id})", print_it=False)
 
             con_db = CardHoldersDB()
 
@@ -133,7 +131,7 @@ def create_card_holder():
     ret_value = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.info(f"Запрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -160,7 +158,7 @@ def create_card_holder():
             except Exception as ex:
                 LOGGER.exception(f"Ошибка подсчета размера фотографии img64: {ex}")
 
-            LOGGER.add_log(f"EVENT\tDoCreateCardHolder\tПолучены данные: ("
+            LOGGER.info(f"Получены данные: ("
                            f"First_Name: {class_guest.first_name} "
                            f"Last_Name: {class_guest.last_name} "
                            f"Middle_Name: {class_guest.middle_name} "
@@ -250,8 +248,7 @@ def create_card_holder():
                                               "не удалось отправить запрос на добавление фото и открытие пропуска"
 
                 else:
-                    LOGGER.add_log(f"WARNING\tDoCreateCardHolder\t"
-                                   f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
+                    LOGGER.error(f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
                                    f"JSON: {str(json_create)[:150]}...")
 
                     ret_value["RESULT"] = 'ERROR'
@@ -259,13 +256,13 @@ def create_card_holder():
                     ret_value['DESC'] = json_create["DESC"]
 
             except Exception as ex:
-                LOGGER.add_log(f"ERROR\tDoCreateCardHolder\tОшибка обращения к интерфейсу Apacs3000: {ex}")
+                LOGGER.exception(f"Ошибка обращения к интерфейсу Apacs3000: {ex}")
                 ret_value["RESULT"] = "ERROR"
                 ret_value["DESC"] = "Ошибка в работе системы"
 
         else:
             # Если в запросе нет Json данных
-            LOGGER.add_log(f"ERROR\tDoCreateCardHolder ошибка чтения Json: В запросе нет Json")
+            LOGGER.error(f"Ошибка чтения Json: В запросе нет Json")
             ret_value["RESULT"] = "ERROR"
             ret_value["DESC"] = "Ошибка в работе системы"
 
@@ -283,7 +280,7 @@ def delete_card_holder():
     json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoDeleteCardHolder\tзапрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -299,9 +296,7 @@ def delete_card_holder():
             str_inn = json_request.get("inn")
             str_fid = json_request.get("id")    # (он же Apacs_id или RemoteID)
 
-            LOGGER.add_log(f"EVENT\tDoDeleteCardHolder\tПолучены данные: ("
-                           f"fid: {str_fid} "
-                           f"inn: {str_inn})", print_it=False)
+            LOGGER.info(f"Получены данные: (fid: {str_fid} - inn: {str_inn})", print_it=False)
 
             try:
                 # Удаляем сотрудника из APACS3000
@@ -318,8 +313,7 @@ def delete_card_holder():
                         json_replay["DESC"] = json_create["DESC"]
                         json_replay['DATA'] = json_create["DATA"]
 
-                        LOGGER.add_log(f"ERROR\tDoDeleteCardHolder "
-                                       f"Не удалось удалить сотрудника в системе Апакс3000: {json_create['DESC']}")
+                        LOGGER.error(f"Не удалось удалить сотрудника в системе Апакс3000: {json_create['DESC']}")
                     else:
                         # Отправляем запрос на удаление данных сотрудника
 
@@ -339,18 +333,18 @@ def delete_card_holder():
                             json_replay['DATA'] = result
 
                 except Exception as ex:
-                    LOGGER.add_log(f"ERROR\tDoDeleteCardHolder Ошибка обращения к интерфейсу Apacs3000: {ex}")
+                    LOGGER.exception(f"Ошибка обращения к интерфейсу Apacs3000: {ex}")
                     json_replay["RESULT"] = "ERROR"
                     json_replay["DESC"] = "Ошибка в работе системы"
 
             except Exception as ex:
-                LOGGER.add_log(f"ERROR\tDoDeleteCardHolder Ошибка обращения к интерфейсу Apacs3000: {ex}")
+                LOGGER.exception(f"Ошибка обращения к интерфейсу Apacs3000: {ex}")
                 json_replay["RESULT"] = "ERROR"
                 json_replay["DESC"] = "Ошибка в работе системы"
 
         else:
             # Если в запросе нет Json данных
-            LOGGER.add_log(f"ERROR\tDoDeleteCardHolder ошибка чтения Json: В запросе нет Json")
+            LOGGER.error(f"Ошибка чтения Json: В запросе нет Json")
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = "Ошибка в работе системы"
 
@@ -363,7 +357,7 @@ def get_block_car():
     json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tGetBlockCar\tзапрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -376,13 +370,13 @@ def get_block_car():
             com_fid = json_request.get("id")
             # inn = json_request.get("inn") убран из-за лишней нагрузки
 
-            LOGGER.add_log(f"EVENT\tGetBlockCar\tПолучены данные: (id: {com_fid})", print_it=False)
+            LOGGER.info(f"Получены данные: (id: {com_fid})", print_it=False)
 
             json_replay = CompanyDB.get_block_car(com_fid, LOGGER)
 
         except Exception as ex:
             # Если в запросе нет Json данных
-            LOGGER.add_log(f"ERROR\tGetBlockCar ошибка чтения Json: В запросе нет {ex}")
+            LOGGER.error(f"Ошибка чтения Json: В запросе нет {ex}")
             json_replay["DESC"] = "Ошибка в работе системы"
 
     return jsonify(json_replay)
