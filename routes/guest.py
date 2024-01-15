@@ -16,15 +16,15 @@ def do_create_guest():
     """ Добавляет посетителя в БД
     (и отправляет смс если номер указан) - смс отключены и решена проблема ожидания 20 секунд """
 
-    json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "SUCCESS", "DESC": "", "DATA": dict()}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
-        json_replay["RESULT"] = "ERROR"
-        json_replay["DESC"] = ERROR_ACCESS_IP
+        ret_value["RESULT"] = "ERROR"
+        ret_value["DESC"] = ERROR_ACCESS_IP
     else:
 
         # Проверяем наличие Json
@@ -47,6 +47,7 @@ def do_create_guest():
                 res_code_gen = gen_invite_code()
                 if res_code_gen.get("RESULT"):
                     json_request['FInviteCode'] = res_code_gen['DATA'].get("InviteCode")
+                    ret_value['FInviteCode'] = res_code_gen['DATA'].get("InviteCode")
 
             # Результат из БД
             db_result = CreateGuestDB.add_guest(json_request, LOGGER)
@@ -61,17 +62,17 @@ def do_create_guest():
             #     except Exception as ex:
             #         LOGGER.add_log(f"ERROR\tDoCreateGuest ошибка отправки СМС: {ex}")
 
-            json_replay["RESULT"] = db_result["status"]
-            json_replay["DESC"] = db_result["desc"]
-            json_replay["DATA"] = db_result["data"]
+            ret_value["RESULT"] = db_result["status"]
+            ret_value["DESC"] = db_result["desc"]
+            ret_value["DATA"] = db_result["data"]
 
         else:
             # Если в запросе нет Json данных
             LOGGER.error(f"Ошибка чтения Json: В запросе нет Json")
-            json_replay["RESULT"] = "ERROR"
-            json_replay["DESC"] = ERROR_READ_JSON
+            ret_value["RESULT"] = "ERROR"
+            ret_value["DESC"] = ERROR_READ_JSON
 
-    return jsonify(json_replay)
+    return jsonify(ret_value)
 
 
 @guests_blue.route('/DoBlockGuest', methods=['POST'])

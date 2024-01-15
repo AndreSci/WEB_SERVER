@@ -130,15 +130,15 @@ def create_card_holder():
 
     class_guest = JsonGuest()
 
-    json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
     LOGGER.info(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
-        json_replay["RESULT"] = "ERROR"
-        json_replay["DESC"] = ERROR_ACCESS_IP
+        ret_value["RESULT"] = "ERROR"
+        ret_value["DESC"] = ERROR_ACCESS_IP
     else:
 
         # Проверяем наличие Json
@@ -210,40 +210,43 @@ def create_card_holder():
                         res_add_photo = res_add_photo.json()
 
                         if res_add_photo['RESULT'] == "SUCCESS":
-                            json_replay['DESC'] = "Успешно создан сотрудник"
+                            ret_value['DESC'] = "Успешно создан сотрудник"
                             LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
                         elif res_add_photo['RESULT'] == "WARNING":
                             # TODO тут реализация создания гостя под сотрудника
 
                             try:
-                                res_guest = requests.post(f"http://127.0.0.1:{ConstControl.get_set_ini().get('port')}"
-                                                              f"/DoCreateGuest",
+                                res_guest = requests.post(f"http://127.0.0.1"
+                                                          f":{ConstControl.get_set_ini().get('port')}"
+                                                          f"/DoCreateGuest",
                                                               json=class_guest.take_json_guest(), timeout=10)
 
                                 if res_guest.status_code == 200:
 
-                                    json_replay['RESULT'] = "WARNING"
-                                    json_replay[
+                                    ret_value['RESULT'] = "WARNING"
+                                    ret_value[
                                         'DESC'] = "Успешно создан сотрудник без фото. Требуется авторизации по коду."
+                                    ret_value['DATA']['FInviteCode'] = res_guest.json().get('FInviteCode')
                                     LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
                                 else:
-                                    json_replay['RESULT'] = "ERROR"
-                                    json_replay['DESC'] = "При попытке создать гостя связанного с сотрудником"
-                                    json_replay['DATA'] = res_guest.json()
+                                    ret_value['RESULT'] = "ERROR"
+                                    ret_value['DESC'] = ("При попытке создать гостя "
+                                                         "связанного с сотрудником возникла ошибка")
+                                    ret_value['DATA'] = res_guest.json()
 
                             except Exception as ex:
-                                json_replay['RESULT'] = 'ERROR'
-                                json_replay['DESC'] = f"Исключение на сервере: {ex}"
+                                ret_value['RESULT'] = 'ERROR'
+                                ret_value['DESC'] = f"Исключение на сервере: {ex}"
 
                         else:
-                            json_replay['RESULT'] = "WARNING"
-                            json_replay['DESC'] = "Сотрудник создан. " \
+                            ret_value['RESULT'] = "WARNING"
+                            ret_value['DESC'] = "Сотрудник создан. " \
                                                   f"Ошибка: {res_add_photo['DESC']}"
 
-                        json_replay['DATA'] = {'id': class_guest.id}
+                        ret_value['DATA'] = {'id': class_guest.id}
                     else:
-                        json_replay["RESULT"] = 'WARNING'
-                        json_replay['DESC'] = "Ошибка на сервере, " \
+                        ret_value["RESULT"] = 'WARNING'
+                        ret_value['DESC'] = "Ошибка на сервере, " \
                                               "не удалось отправить запрос на добавление фото и открытие пропуска"
 
                 else:
@@ -251,22 +254,22 @@ def create_card_holder():
                                    f"Интерфейс Apacs ответил отказом на запрос создания сотрудника "
                                    f"JSON: {str(json_create)[:150]}...")
 
-                    json_replay["RESULT"] = 'ERROR'
-                    json_replay['DATA'] = json_create["DATA"]
-                    json_replay['DESC'] = json_create["DESC"]
+                    ret_value["RESULT"] = 'ERROR'
+                    ret_value['DATA'] = json_create["DATA"]
+                    ret_value['DESC'] = json_create["DESC"]
 
             except Exception as ex:
                 LOGGER.add_log(f"ERROR\tDoCreateCardHolder\tОшибка обращения к интерфейсу Apacs3000: {ex}")
-                json_replay["RESULT"] = "ERROR"
-                json_replay["DESC"] = "Ошибка в работе системы"
+                ret_value["RESULT"] = "ERROR"
+                ret_value["DESC"] = "Ошибка в работе системы"
 
         else:
             # Если в запросе нет Json данных
             LOGGER.add_log(f"ERROR\tDoCreateCardHolder ошибка чтения Json: В запросе нет Json")
-            json_replay["RESULT"] = "ERROR"
-            json_replay["DESC"] = "Ошибка в работе системы"
+            ret_value["RESULT"] = "ERROR"
+            ret_value["DESC"] = "Ошибка в работе системы"
 
-    return jsonify(json_replay)
+    return jsonify(ret_value)
 
 
 @card_holder_blue.route('/DoDeleteCardHolder', methods=['POST'])
