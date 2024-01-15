@@ -15,7 +15,7 @@ def it_face_route():
     ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoIsFace\tЗапрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -29,8 +29,7 @@ def it_face_route():
             today = datetime.datetime.today()
             json_request['id'] = str(today.strftime("%Y%m%d%H%M%S"))
 
-            LOGGER.add_log(f"EVENT\tDoIsFace\tПолучены данные: img64.size: {len(json_request['img64'])}",
-                           print_it=False)
+            LOGGER.info(f"Получены данные: img64.size: {len(json_request['img64'])}", print_it=False)
 
             # Проверяем и меняем, если нужно, размер фото (максимальный размер для терминала 1080p.)
             # Значительная производительность замечена на 720p, так же облегчаете передачу данных терминалу
@@ -40,15 +39,14 @@ def it_face_route():
             it_face = FaceClass()
             ret_value = it_face.is_face(json_request)
 
-            LOGGER.add_log(f"EVENT\tDoIsFace\tРезультат обработки фотографии: {ret_value}",
-                           print_it=False)
+            LOGGER.event(f"Результат обработки фотографии: {ret_value}", print_it=False)
 
             # Сохраняем и убираем лишние символы в коде (b' в начале и ' в конце ).
             ret_value['DATA']['img64'] = str(json_request['img64'])[2:-1]
 
         except Exception as ex:
             # Если в запросе нет Json данных
-            LOGGER.add_log(f"ERROR\tDoIsFace\tОшибка чтения Json: В запросе нет {ex}")
+            LOGGER.exception(f"Ошибка чтения Json: В запросе нет {ex}")
             ret_value["DESC"] = "Ошибка в работе системы"
 
     return jsonify(ret_value)
@@ -60,7 +58,7 @@ def get_guest_photo():
     ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tGetGuestPhotoByInviteCode\tЗапрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -84,7 +82,7 @@ def get_guest_photo():
                 ret_value['DESC'] = db_result['DESC']
 
         except Exception as ex:
-            LOGGER.add_log(f"ERROR\tGetGuestPhotoByInviteCode\tИсключение вызвало: {ex}")
+            LOGGER.exception(f"Исключение вызвало: {ex}")
             ret_value['DESC'] = f"Исключение вызвало: {ex}"
 
     return jsonify(ret_value)
