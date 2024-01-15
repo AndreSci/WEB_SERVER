@@ -17,7 +17,7 @@ def add_employee_photo():
     json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\tзапрос от ip: {user_ip}", print_it=False)
+    LOGGER.info(f"Запрос от ip: {user_ip}", print_it=False)
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -26,7 +26,7 @@ def add_employee_photo():
         # Проверяем наличие Json в запросе
         if request.is_json:
             res_json = request.json
-            LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\tПолучены данные: (id: {res_json.get('id')})")
+            LOGGER.event(f"Получены данные: (id: {res_json.get('id')})")
 
             con_helper = BSHelper(ConstControl.get_set_ini())
 

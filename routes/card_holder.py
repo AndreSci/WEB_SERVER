@@ -13,21 +13,25 @@ card_holder_blue = Blueprint('card_holder_blue', __name__, template_folder='temp
 
 class JsonGuest:
     def __init__(self):
-        self.account_id = 0
+        self.id = None
+        self.img64 = ''
+        self.account_id = None
         self.last_name = ''
         self.first_name = ''
         self.middle_name = ''
         self.car_number = ''
         self.date_from = datetime.datetime.now().strftime("%d-%m-%y")
         self.date_to = (datetime.datetime.now() + datetime.timedelta(days=GUEST_DAYS)).strftime("%d-%m-%y")
-        self.invite_code = 0
+        self.invite_code = None
         self.remote_id = 0
         self.phone = ''
-        self.inn = ''
+        self.inn = None
 
     def take_json_guest(self) -> dict:
 
         json_guest = {
+            "id": self.id,
+            "img64": self.img64,
             "FAccountID": self.account_id,
             "FLastName": self.last_name,
             "FFirstName": self.first_name,
@@ -148,10 +152,11 @@ def create_card_holder():
             class_guest.middle_name = convert_word(json_request.get("Middle_Name"))
             class_guest.inn = convert_word(json_request.get("inn"))
             class_guest.car_number = convert_word(json_request.get("Car_Number"))
+            class_guest.img64 = json_request.get('img64')
             photo_img64 = 0
 
             try:
-                photo_img64 = len(json_request['img64'])
+                photo_img64 = len(class_guest.img64)
             except Exception as ex:
                 LOGGER.exception(f"Ошибка подсчета размера фотографии img64: {ex}")
 
@@ -188,15 +193,18 @@ def create_card_holder():
                     sys_addr_id = json_create['DATA']['sysAddrID']
                     sys_addr_id = sys_addr_id[8:]
 
-                    # TODO сделать классом отправку json
-                    json_empl = dict()
+                    # Переделано в класс class_guest
+                    # json_empl = dict()
+                    # json_empl['id'] = int(sys_addr_id, 16)
+                    # json_empl['img64'] = json_request.get("img64")
+                    # res_add_photo = requests.post(f"http://127.0.0.1:{ConstControl.get_set_ini().get('port')}"
+                    #                               f"/DoAddEmployeePhoto",
+                    #                               json=json_empl)
 
-                    json_empl['id'] = int(sys_addr_id, 16)
-                    json_empl['img64'] = json_request.get("img64")
-
+                    class_guest.id = int(sys_addr_id, 16)
                     res_add_photo = requests.post(f"http://127.0.0.1:{ConstControl.get_set_ini().get('port')}"
                                                   f"/DoAddEmployeePhoto",
-                                                  json=json_empl)
+                                                  json=class_guest.take_json_guest())
 
                     if res_add_photo.status_code == 200:
                         res_add_photo = res_add_photo.json()
@@ -204,12 +212,35 @@ def create_card_holder():
                         if res_add_photo['RESULT'] == "SUCCESS":
                             json_replay['DESC'] = "Успешно создан сотрудник"
                             LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
+                        elif res_add_photo['RESULT'] == "WARNING":
+                            # TODO тут реализация создания гостя под сотрудника
+
+                            try:
+                                res_guest = requests.post(f"http://127.0.0.1:{ConstControl.get_set_ini().get('port')}"
+                                                              f"/DoCreateGuest",
+                                                              json=class_guest.take_json_guest(), timeout=10)
+
+                                if res_guest.status_code == 200:
+
+                                    json_replay['RESULT'] = "WARNING"
+                                    json_replay[
+                                        'DESC'] = "Успешно создан сотрудник без фото. Требуется авторизации по коду."
+                                    LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
+                                else:
+                                    json_replay['RESULT'] = "ERROR"
+                                    json_replay['DESC'] = "При попытке создать гостя связанного с сотрудником"
+                                    json_replay['DATA'] = res_guest.json()
+
+                            except Exception as ex:
+                                json_replay['RESULT'] = 'ERROR'
+                                json_replay['DESC'] = f"Исключение на сервере: {ex}"
+
                         else:
                             json_replay['RESULT'] = "WARNING"
                             json_replay['DESC'] = "Сотрудник создан. " \
                                                   f"Ошибка: {res_add_photo['DESC']}"
 
-                        json_replay['DATA'] = {'id': json_empl['id']}
+                        json_replay['DATA'] = {'id': class_guest.id}
                     else:
                         json_replay["RESULT"] = 'WARNING'
                         json_replay['DESC'] = "Ошибка на сервере, " \

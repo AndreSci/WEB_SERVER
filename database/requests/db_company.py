@@ -2,13 +2,16 @@ from misc.logger import Logger
 from database.db_connection import connect_db
 
 
+RET_VALUE = {"RESULT": "ERROR", "DESC": '', "DATA": dict()}
+LOGGER = Logger()
+
 class CompanyDB:
 
     @staticmethod
     def get_block_car(account_id: str, logger: Logger) -> dict:
         """ Принимает FID аккаунта/компании и возвращает информацию о поле 'FBlockCar' """
 
-        ret_value = {"RESULT": "ERROR", "DESC": '', "DATA": ""}
+        ret_value = RET_VALUE
 
         try:
             # Создаем подключение
@@ -42,5 +45,36 @@ class CompanyDB:
         except Exception as ex:
             ret_value["DESC"] = "Ошибка работы с БД"
             logger.add_log(f"ERROR\tCompanyDB.get_block_status - Ошибка работы с базой данных: {ex}")
+
+        return ret_value
+
+    @staticmethod
+    def get_account_id_by_inn(inn: str) -> dict:
+        """ Функция предоставляет FID из БД sac3.taccount """
+
+        ret_value = RET_VALUE
+
+        try:
+            # Создаем подключение
+            connection = connect_db()
+
+            with connection.cursor() as cur:
+
+                cur.execute(f"select taccount.FID as FAccountID "
+                            f"from sac3.tcompany, sac3.taccount "
+                            f"where FINN = %s and tcompany.FID = taccount.FCompanyID", (inn, ))
+
+                request_res = cur.fetchone()
+
+                if request_res:
+                    ret_value['RESULT'] = "SUCCESS"
+                    ret_value['DATA'] = request_res
+                else:
+                    ret_value['DESC'] = "Не удалось найти ID по ИНН"
+
+        except Exception as ex:
+            ret_value['DESC'] = f"Ошибку вызвало: {ex}"
+            LOGGER.exception(f"Ошибку вызвало: {ex}")
+
 
         return ret_value

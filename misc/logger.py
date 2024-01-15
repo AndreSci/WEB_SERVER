@@ -1,3 +1,4 @@
+# Author AndreSci
 import threading
 import os
 import datetime
@@ -5,7 +6,7 @@ import inspect
 import traceback
 
 # Данные для logger
-LOGGER_PATH = os.path.join(os.getcwd(), "logs\\")
+LOGGER_PATH = os.path.join(os.getcwd(), "logs/")
 
 
 class BColors:
@@ -80,7 +81,7 @@ class Logger(metaclass=SingletonBaseClass):
                     # if print_it:
                     #     print(date_time + "\t" + text)
                     if print_it:
-                        if 'EXCEPTION' == text[:9] or 'ERROR' == text[:5]:
+                        if 'ERROR' == text[:5]:
                             print(f"{BColors.col_fail}{date_time}\t{text}{BColors.col_endc}")
                         elif 'WARNING' == text[:7]:
                             print(f"{BColors.col_warning}{date_time}\t{text}{BColors.col_endc}")

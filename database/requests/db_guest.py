@@ -71,6 +71,15 @@ class CreateGuestDB:
             connection = connect_db()
 
             with connection.cursor() as cur:
+                # Если FAccountID пуст но есть inn
+                inn = data_on_pass.get('inn')
+                if not account_id and inn:
+
+                    cur.execute(f"select taccount.FID as FAccountID "
+                                f"from sac3.tcompany, sac3.taccount "
+                                f"where FINN = %s and tcompany.FID = taccount.FCompanyID", (inn,))
+                    request_account_id = cur.fetcone()
+                    account_id = request_account_id.get('FAccountID')
 
                 # Проверяем компанию на доступность
                 cur.execute(f"select * from sac3.taccount, sac3.tcompany "
@@ -526,10 +535,11 @@ class CreateGuestDB:
             connection = connect_db()
 
             with connection.cursor() as cur:
-
+                # Запрашиваем у БД запись с таким же invite_code, а так же проверяем срок до которого должен действовать
                 cur.execute(f"select * from sac3.tguest where FInviteCode = %s and FDateTo >= now()", (invite_code, ))
                 result = cur.fetchone()
 
+                # Если результат пуст считаем что invite_code доступен для использования для нового гостя
                 if not result:
                     ret_value["DESC"] = f"InviteCode свободен"
                     ret_value['RESULT'] = True
