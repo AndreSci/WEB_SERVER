@@ -44,7 +44,7 @@ def add_employee_photo():
             res_base_helper = con_helper.get_card_holder(res_json, activity, LOGGER)
             result = res_base_helper.get("RESULT")
 
-            LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\tПосле BaseHelper "
+            LOGGER.event(f"После BaseHelper "
                            f"json: {res_base_helper['DATA'].get('id')} - {res_base_helper['DATA'].get('name')}",
                            print_it=False)
 
@@ -61,8 +61,7 @@ def add_employee_photo():
                 it_face = FaceClass()
                 res_face_rec = it_face.is_face(res_json)
 
-                LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\tРезультат обработки фотографии: {res_face_rec}",
-                               print_it=False)
+                LOGGER.event(f"Результат обработки фотографии: {res_face_rec}", print_it=False)
 
                 # подключаемся к драйверу Распознания лиц
                 connect_driver = FaceDriver(ConstControl.get_set_ini())
@@ -74,7 +73,7 @@ def add_employee_photo():
 
                     # отменяем заявку в базе через base_helper
                     con_helper.deactivate_person(res_json, LOGGER)
-                    LOGGER.add_log(f"WARNING\tDoAddEmployeePhoto\tОтмена пропуска в BaseHelper "
+                    LOGGER.warning(f"Отмена пропуска в BaseHelper "
                                    f"из-за ошибки на Драйвере распознания лиц")
 
                     # Сохраняем фото в log_path где папка photo_errors
@@ -91,10 +90,9 @@ def add_employee_photo():
             # Задумка на случай добавления ситуаций
             if result == "SUCCESS":
                 json_replay["RESULT"] = "SUCCESS"
-                LOGGER.add_log(f"SUCCESS\tDoAddEmployeePhoto\t"
-                               f"Успешно добавлено лицо под id: {res_base_helper['DATA'].get('id')}")
+                LOGGER.event(f"Успешно добавлено лицо под id: {res_base_helper['DATA'].get('id')}")
             elif result == "ERROR":
-                LOGGER.add_log(f"ERROR\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                LOGGER.error(f"{json_replay['DESC']}")
             elif result == "EXCEPTION":
                 LOGGER.add_log(f"ERROR\tDoAddEmployeePhoto\tEXCEPTION")
             elif result == "DRIVER":
@@ -119,21 +117,20 @@ def add_employee_photo():
                     json_replay["DESC"] = f"Не удалось добавить фотографию в систему: {str_msg}"
 
                 except Exception as ex:
-                    LOGGER.add_log(f"ERROR\tDoAddEmployeePhoto\tНе удалось получить данные из ответа Драйвера {ex}")
+                    LOGGER.exception(f"Не удалось получить данные из ответа Драйвера {ex}")
                     json_replay["DESC"] = f"При добавлении фото произошла ошибка"
 
             elif result == "WARNING":
-                LOGGER.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                LOGGER.warning(f"{json_replay['DESC']}")
             elif result == "NotDefined":
-                LOGGER.add_log(f"WARNING\tDoAddEmployeePhoto\t{json_replay['DESC']}")
+                LOGGER.warning(f"{json_replay['DESC']}")
             elif result == "NO_FACE":
-                LOGGER.add_log(f"EVENT\tDoAddEmployeePhoto\t"
-                               f"Создан сотрудник без фотографии с флагом activity = 0: {res_json}")
+                LOGGER.event(f"Создан сотрудник без фотографии с флагом activity = 0: {res_json}")
             else:
                 pass
 
         else:
-            LOGGER.add_log(f"ERROR\tDoAddEmployeePhoto\tОшибка, в запросе нет Json данных: {ERROR_READ_JSON}")
+            LOGGER.error(f"Ошибка, в запросе нет Json данных: {ERROR_READ_JSON}")
             json_replay["RESULT"] = "ERROR"
             json_replay["DESC"] = f"Ошибка на сервере: {ERROR_READ_JSON}"
 
@@ -145,7 +142,7 @@ def delete_person():
     json_replay = {"RESULT": "ERROR", "DESC": ERROR_ON_SERVER, "DATA": ""}
 
     user_ip = request.remote_addr
-    LOGGER.add_log(f"EVENT\tDoDeletePhoto запрос от ip: {user_ip}", print_it=False)
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
     if not ALLOW_IP.find(user_ip, LOGGER):
         json_replay["DESC"] = ERROR_ACCESS_IP
@@ -153,8 +150,7 @@ def delete_person():
         try:
             res_json = request.json
 
-            LOGGER.add_log(f"EVENT\tDoDeletePhoto\tПолучены данные: ("
-                           f"id: {res_json.get('id')})")
+            LOGGER.info(f"Получены данные: id: {res_json.get('id')}")
 
             # Отправляем запрос на удаление данных сотрудника
             con_helper = BSHelper(ConstControl.get_set_ini())
@@ -174,13 +170,11 @@ def delete_person():
                     json_replay["DESC"] = f"Пропуск успешно удалена."
                 else:
                     json_replay['DESC'] = res_driver['DESC']
-
             else:
-                LOGGER.add_log(f"ERROR\tDoDeletePhoto\tBaseHelper DESC: {res_base_helper.get('DESC')}, "
-                               f"DATA: {res_base_helper.get('DATA')}")
+                LOGGER.error(f"BaseHelper DESC: {res_base_helper.get('DESC')}, DATA: {res_base_helper.get('DATA')}")
 
         except Exception as ex:
             json_replay['DESC'] = ERROR_READ_JSON
-            LOGGER.add_log(f"ERROR\tDoDeletePhoto\tИсключение вызвало {ex}")
+            LOGGER.exception(f"Исключение вызвало {ex}")
 
     return jsonify(json_replay)
