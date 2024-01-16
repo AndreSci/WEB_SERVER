@@ -36,49 +36,60 @@ class CreateGuestDB:
     def add_guest(data_on_pass: dict, logger: Logger) -> dict:
         """ принимает словарь с данными от on_pass и logger """
 
-        account_id = int(data_on_pass["FAccountID"])
-        last_name = data_on_pass['FLastName']
-        first_name = data_on_pass['FFirstName']
-
-        # middle_name = data_on_pass['FMiddleName']
-        middle_name = data_on_pass.get("FMiddleName")
-
-        # car_number = data_on_pass['FCarNumber']
-        car_number = data_on_pass.get("FCarNumber")
-
-        date_from = data_on_pass['FDateFrom']
-        date_to = data_on_pass['FDateTo']
-        invite_code = int(data_on_pass['FInviteCode'])
-        remote_id = int(data_on_pass["FRemoteID"])
-
-        # phone_number = data_on_pass["FPhone"]
-        phone_number = data_on_pass.get("FPhone")
-
-        # Block by output (метод разового прохода)
-        block_by_out = data_on_pass.get("FBlockByOutput")
-
-        if not middle_name:
-            middle_name = ''
-        if not car_number:
-            car_number = ''
-        if not phone_number:
-            phone_number = ''
-
         ret_value = {"status": "ERROR", "desc": '', "data": ''}
+
+        try:
+            if data_on_pass.get('FAccountID'):
+                account_id = int(data_on_pass["FAccountID"])
+            else:
+                account_id = None
+
+            last_name = data_on_pass['FLastName']
+            first_name = data_on_pass['FFirstName']
+
+            # middle_name = data_on_pass['FMiddleName']
+            middle_name = data_on_pass.get("FMiddleName")
+
+            # car_number = data_on_pass['FCarNumber']
+            car_number = data_on_pass.get("FCarNumber")
+
+            date_from = data_on_pass['FDateFrom']
+            date_to = data_on_pass['FDateTo']
+            invite_code = int(data_on_pass['FInviteCode'])
+            remote_id = int(data_on_pass["FRemoteID"])
+
+            # phone_number = data_on_pass["FPhone"]
+            phone_number = data_on_pass.get("FPhone")
+
+            # Block by output (метод разового прохода)
+            block_by_out = data_on_pass.get("FBlockByOutput")
+
+            if not middle_name:
+                middle_name = ''
+            if not car_number:
+                car_number = ''
+            if not phone_number:
+                phone_number = ''
+        except Exception as ex:
+            logger.exception(f"Ошибка обработки данных для SQL: {ex}")
+            ret_value['desc'] = "Ошибка обработки данных для SQL"
+            return ret_value
 
         try:
             # Создаем подключение
             connection = connect_db()
 
             with connection.cursor() as cur:
+
                 # Если FAccountID пуст но есть inn
-                inn = data_on_pass.get('inn')
-                if not account_id and inn:
+                if account_id is None:
+                    inn = data_on_pass.get('inn')
 
                     cur.execute(f"select taccount.FID as FAccountID "
                                 f"from sac3.tcompany, sac3.taccount "
                                 f"where FINN = %s and tcompany.FID = taccount.FCompanyID", (inn,))
-                    request_account_id = cur.fetcone()
+                    request_account_id = cur.fetchone()
+
                     account_id = request_account_id.get('FAccountID')
 
                 # Проверяем компанию на доступность
@@ -113,7 +124,8 @@ class CreateGuestDB:
                                    f"Регистрация заявки отклонена AccountID: {account_id}. "
                                    f"Компания/Аккаунт не найден(а) или имеет ограничения.")
 
-                elif len(is_exist) != 0:
+                # Пропускать remote_id если он == 0 (сделано для регистрации Сотрудников без фото)
+                elif len(is_exist) != 0 and remote_id != 0:
                     ret_value["status"] = "WARNING"
                     ret_value["desc"] = WARNING_IS_EXIST
 

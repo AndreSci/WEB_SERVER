@@ -20,8 +20,8 @@ class JsonGuest:
         self.first_name = ''
         self.middle_name = ''
         self.car_number = ''
-        self.date_from = datetime.datetime.now().strftime("%d-%m-%y")
-        self.date_to = (datetime.datetime.now() + datetime.timedelta(days=GUEST_DAYS)).strftime("%d-%m-%y")
+        self.date_from = datetime.datetime.now().strftime("%y-%m-%d")
+        self.date_to = (datetime.datetime.now() + datetime.timedelta(days=GUEST_DAYS)).strftime("%y-%m-%d")
         self.invite_code = None
         self.remote_id = 0
         self.phone = ''
@@ -32,6 +32,7 @@ class JsonGuest:
         json_guest = {
             "id": self.id,
             "img64": self.img64,
+            "inn": self.inn,
             "FAccountID": self.account_id,
             "FLastName": self.last_name,
             "FFirstName": self.first_name,
@@ -128,7 +129,7 @@ def create_card_holder():
 
     class_guest = JsonGuest()
 
-    ret_value = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "SUCCESS", "DESC": "", "DATA": {}}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
@@ -207,12 +208,16 @@ def create_card_holder():
                     if res_add_photo.status_code == 200:
                         res_add_photo = res_add_photo.json()
 
+                        # Если нет фото в запросе, будет создан сотрудник с FActivity = 0
+                        # и дополнительно Гость с QR-кодом и FActivity = 1 и в ответ клиенту
+                        # предупреждением включая QR-код в ответе
                         if res_add_photo['RESULT'] == "SUCCESS":
                             ret_value['DESC'] = "Успешно создан сотрудник"
                             LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
-                        elif res_add_photo['RESULT'] == "WARNING":
-                            # TODO тут реализация создания гостя под сотрудника
+                        elif res_add_photo['RESULT'] == "SUCCESS_GUEST":
 
+                            # Тут реализация создания гостя под сотрудника
+                            # (Для ручного добавления фото через терминал по QR-коду)
                             try:
                                 res_guest = requests.post(f"http://127.0.0.1"
                                                           f":{ConstControl.get_set_ini().get('port')}"
@@ -220,28 +225,32 @@ def create_card_holder():
                                                               json=class_guest.take_json_guest(), timeout=10)
 
                                 if res_guest.status_code == 200:
+                                    res_guest_json = res_guest.json()
 
-                                    ret_value['RESULT'] = "WARNING"
-                                    ret_value[
-                                        'DESC'] = "Успешно создан сотрудник без фото. Требуется авторизации по коду."
-                                    ret_value['DATA']['FInviteCode'] = res_guest.json().get('FInviteCode')
-                                    LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
-                                else:
-                                    ret_value['RESULT'] = "ERROR"
-                                    ret_value['DESC'] = ("При попытке создать гостя "
-                                                         "связанного с сотрудником возникла ошибка")
-                                    ret_value['DATA'] = res_guest.json()
+                                    if res_guest_json.get('RESULT') == 'SUCCESS':
+                                        ret_value['RESULT'] = "WARNING"
+                                        ret_value['DESC'] = ("Успешно создан сотрудник без фото. "
+                                                             "Требуется авторизации по коду.")
+                                        ret_value['DATA']['FInviteCode'] = res_guest_json.get('FInviteCode')
+
+                                        LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
+                                    else:
+                                        ret_value['RESULT'] = "ERROR"
+                                        ret_value['DESC'] = ("При попытке создать гостя "
+                                                             "связанного с сотрудником возникла ошибка")
+                                        ret_value['DATA'] = res_guest.json()
 
                             except Exception as ex:
                                 ret_value['RESULT'] = 'ERROR'
                                 ret_value['DESC'] = f"Исключение на сервере: {ex}"
+                                LOGGER.exception(f"Исключение вызвало: {ex}")
 
                         else:
                             ret_value['RESULT'] = "WARNING"
                             ret_value['DESC'] = "Сотрудник создан. " \
                                                   f"Ошибка: {res_add_photo['DESC']}"
 
-                        ret_value['DATA'] = {'id': class_guest.id}
+                        ret_value['DATA']['id'] = class_guest.id
                     else:
                         ret_value["RESULT"] = 'WARNING'
                         ret_value['DESC'] = "Ошибка на сервере, " \
@@ -252,7 +261,7 @@ def create_card_holder():
                                    f"JSON: {str(json_create)[:150]}...")
 
                     ret_value["RESULT"] = 'ERROR'
-                    ret_value['DATA'] = json_create["DATA"]
+                    ret_value['DATA']['APACS3000'] = json_create["DATA"]
                     ret_value['DESC'] = json_create["DESC"]
 
             except Exception as ex:
