@@ -70,6 +70,7 @@ class CreateGuestDB:
                 car_number = ''
             if not phone_number:
                 phone_number = ''
+
         except Exception as ex:
             logger.exception(f"Ошибка обработки данных для SQL: {ex}")
             ret_value['desc'] = "Ошибка обработки данных для SQL"
