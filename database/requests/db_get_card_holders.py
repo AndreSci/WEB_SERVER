@@ -38,7 +38,7 @@ class CardHoldersDB:
 
         except Exception as ex:
             ret_value["desc"] = "Ошибка работы с базой данных CardHoldersDB.get_sac3"
-            logger.add_log(f"ERROR\tCardHoldersDB.get_sac3 - Ошибка работы с базой данных: {ex}")
+            logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
 
@@ -77,7 +77,7 @@ class CardHoldersDB:
 
         except Exception as ex:
             ret_value["desc"] = "Ошибка работы с базой данных CardHoldersDB.get_fdb"
-            logger.add_log(f"CardHoldersDB.get_fdb - \tERROR\tОшибка работы с базой данных: {ex}")
+            logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
 
@@ -116,6 +116,6 @@ class CardHoldersDB:
 
         except Exception as ex:
             ret_value["desc"] = "Ошибка работы с базой данных CardHoldersDB.get_with_face"
-            logger.add_log(f"ERROR\tCardHoldersDB.get_sac3 - Ошибка работы с базой данных: {ex}")
+            logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
