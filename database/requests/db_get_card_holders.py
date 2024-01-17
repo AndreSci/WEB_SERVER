@@ -96,7 +96,7 @@ class CardHoldersDB:
                 cur.execute(f"select FRemoteID "
                                 "from vig_face.tperson "
                                 "where FTag = 'Employee' "
-                                "and FActivity = 1 "
+                                "and (FActivity = 1 or FWaitPhoto = 1) "
                                 f"and FRemoteID in ({sql_list})")
 
                 request_activity = cur.fetchall()
