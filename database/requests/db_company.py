@@ -78,3 +78,38 @@ class CompanyDB:
 
 
         return ret_value
+
+
+    @staticmethod
+    def add_contact(data: dict) -> dict:
+        """ Функция предоставляет FID из БД sac3.taccount """
+
+        ret_value = RET_VALUE
+
+        try:
+            # Создаем подключение
+            connection = connect_db()
+
+            with connection.cursor() as cur:
+
+                # Проверяем компанию и пользователя на доступность
+                cur.execute(f"select * from sac3.taccount, sac3.tcompany "
+                                f"where FCompanyID = tcompany.FID "
+                                f"and taccount.FID = %s "
+                                f"and tcompany.FActivity = 1 "
+                                f"and taccount.FActivity = 1", (data.get('FAccountID'), ))
+
+                request_res = cur.fetchone()
+
+                if request_res:
+                    ret_value['RESULT'] = "SUCCESS"
+                    ret_value['DATA'] = request_res
+                else:
+                    ret_value['DESC'] = "Не удалось найти компанию"
+
+        except Exception as ex:
+            ret_value['DESC'] = f"Ошибку вызвало: {ex}"
+            LOGGER.exception(f"Ошибку вызвало: {ex}")
+
+
+        return ret_value

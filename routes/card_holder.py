@@ -210,7 +210,7 @@ def create_card_holder():
 
                         # Если нет фото в запросе, будет создан сотрудник с FActivity = 0
                         # и дополнительно Гость с QR-кодом и FActivity = 1 и в ответ клиенту
-                        # предупреждением включая QR-код в ответе
+                        # предупреждением включая QR-код в ответе и FRemoteID созданной персоны
                         if res_add_photo['RESULT'] == "SUCCESS":
                             ret_value['DESC'] = "Успешно создан сотрудник"
                             LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
@@ -232,8 +232,7 @@ def create_card_holder():
                                         ret_value['DESC'] = ("Успешно создан сотрудник без фото. "
                                                              "Требуется авторизации по коду.")
                                         ret_value['DATA']['FInviteCode'] = res_guest_json.get('FInviteCode')
-
-                                        LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}")
+                                        LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}: {res_guest_json}")
                                     else:
                                         ret_value['RESULT'] = "ERROR"
                                         ret_value['DESC'] = ("При попытке создать гостя "
@@ -379,7 +378,7 @@ def get_block_car():
             com_fid = json_request.get("id")
             # inn = json_request.get("inn") убран из-за лишней нагрузки
 
-            LOGGER.info(f"Получены данные: (id: {com_fid})", print_it=False)
+            LOGGER.info(f"Получены данные: ({json_request})", print_it=False)
 
             json_replay = CompanyDB.get_block_car(com_fid, LOGGER)
 

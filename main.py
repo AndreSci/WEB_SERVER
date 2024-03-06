@@ -10,6 +10,7 @@ from routes.face import face_blue
 from routes.card_holder import card_holder_blue
 from routes.guest import guests_blue
 from routes.employee import employee_blue
+from routes.company import company_blue
 
 # unittest routes
 from routes.unittest_guest import unittest_guests_blue
@@ -26,6 +27,7 @@ app.register_blueprint(face_blue)
 app.register_blueprint(card_holder_blue)
 app.register_blueprint(guests_blue)
 app.register_blueprint(employee_blue)
+app.register_blueprint(company_blue)
 
 # unittests
 app.register_blueprint(unittest_guests_blue)
@@ -45,7 +47,7 @@ def web_flask():
     from misc.consts import SET_INI
 
     # Меняем имя терминала
-    ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {SET_INI['port']} - (use OpenCV) v3")
+    ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {SET_INI['port']} - (use OpenCV) v4")
 
     LOGGER.add_log(f"SUCCESS\tweb_flask\tСервер WEB_Flask начал свою работу")  # log
 
