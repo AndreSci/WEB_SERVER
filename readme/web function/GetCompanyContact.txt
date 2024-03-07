@@ -1,0 +1,22 @@
+
+Вызов - http://127.0.0.1:8066/GetCompanyContact
+(GET)
+
+json данные
+{
+    "id": 1707,
+    "inn": 7720275587
+}
+
+отвечает json
+{"RESULT": "", "DESC": "",
+    "DATA": {
+        "OKVED": "Делаем молоко (тест)",
+        "date_create": "2024-03-07 16:11:55",
+        "name": "ООО МИЛК (тест)",
+        "office": "B309",
+        "phone": "+79990001122"
+    }}
+
+"RESULT":   SUCCESS
+            ERROR - описание ошибки в ответе "DESC"
