@@ -1,4 +1,5 @@
 import requests
+from requests.models import Response
 
 
 class SendEMAIL:
@@ -9,7 +10,9 @@ class SendEMAIL:
         self.host = set_ini["sms_host"]
         self.port = set_ini["sms_port"]
 
-    def send_sms(self, email_name, text):
-        res = requests.post(f"http://{self.host}:{self.port}/send_email/?femail={email_name}&ftext={text}")
+    def send_sms(self, email_name, text) -> Response:
+
+        res = requests.post(f"http://{self.host}:{self.port}/send_email/?femail={email_name}&ftext={text}",
+                            timeout=10)
 
         return res

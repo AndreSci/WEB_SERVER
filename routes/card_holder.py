@@ -1,5 +1,6 @@
 import requests
 import datetime
+from typing import Any
 from flask import Blueprint, request, jsonify
 from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ConstControl
 from misc.allowed_words import convert_word
@@ -54,7 +55,7 @@ def get_card_holder():
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
 
-    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": Any}
 
     # Проверяем разрешен ли доступ для IP
     if not ALLOW_IP.find(user_ip, LOGGER):
@@ -285,7 +286,7 @@ def delete_card_holder():
     # connect_driver = ConDriver(set_ini)
     # res_driver = connect_driver.delete_person({"id": 2450}, logger)
 
-    json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": ""}
+    json_replay = {"RESULT": "SUCCESS", "DESC": "", "DATA": Any}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
@@ -362,7 +363,7 @@ def delete_card_holder():
 @card_holder_blue.route('/GetBlockCar', methods=['GET'])
 def get_block_car():
     """ Получает информацию о возможности открытия пропусков на авто """
-    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": Any}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)

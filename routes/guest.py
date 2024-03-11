@@ -16,7 +16,7 @@ def do_create_guest():
     """ Добавляет посетителя в БД
     (и отправляет смс если номер указан) - смс отключены и решена проблема ожидания 20 секунд """
 
-    ret_value = {"RESULT": "SUCCESS", "DESC": "", "DATA": dict()}
+    ret_value = {"RESULT": "SUCCESS", "DESC": "", "DATA": dict(), 'FInviteCode': None}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
@@ -79,7 +79,7 @@ def do_create_guest():
 def do_block_guest():
     """ Блокирует заявку на посетителя """
 
-    json_replay = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}
+    json_replay = {'RESULT': 'ERROR', 'DESC': '', 'DATA': None}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)

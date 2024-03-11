@@ -1,4 +1,3 @@
-# Author AndreSci
 import threading
 import os
 import datetime

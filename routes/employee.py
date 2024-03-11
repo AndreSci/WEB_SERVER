@@ -6,7 +6,6 @@ from face_id.face_recognition import FaceClass
 from database.driver.rest_driver import FaceDriver
 from database.base_helper.helper import BSHelper
 
-
 employee_blue = Blueprint('employee_blue', __name__, template_folder='templates', static_folder='static')
 
 
@@ -14,7 +13,7 @@ employee_blue = Blueprint('employee_blue', __name__, template_folder='templates'
 def add_employee_photo():
     """ Добавляет сотрудника с фото лица в терминалы """
 
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": None}
 
     user_ip = request.remote_addr
     LOGGER.info(f"Запрос от ip: {user_ip}", print_it=False)
@@ -142,7 +141,7 @@ def add_employee_photo():
 
 @employee_blue.route('/DoDeletePhoto', methods=['POST'])
 def delete_person():
-    json_replay = {"RESULT": "ERROR", "DESC": ERROR_ON_SERVER, "DATA": ""}
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": None}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)

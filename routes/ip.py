@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from misc.consts import LOGGER, ALLOW_IP
 
 ip_blue = Blueprint('ip_blue', __name__, template_folder='templates', static_folder='static')
-# IP FUNCTION -----
 
 
 @ip_blue.route('/DoAddIp', methods=['POST'])

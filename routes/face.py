@@ -12,7 +12,7 @@ face_blue = Blueprint('face_blue', __name__, template_folder='templates', static
 @face_blue.route('/DoIsFace', methods=['GET'])
 def it_face_route():
     """ Обрабатывает фото и определяет лицо """
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": {}}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
@@ -55,7 +55,7 @@ def it_face_route():
 @face_blue.route('/GetGuestPhotoByInviteCode', methods=['GET'])
 def get_guest_photo():
     """ Получить фото гостя """
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": None}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)

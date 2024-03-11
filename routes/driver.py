@@ -12,7 +12,7 @@ driver_blue = Blueprint('driver_blue', __name__, template_folder='templates', st
 def add_person():
     """ Добавляет персону в терминалы без фото """
 
-    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": None}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
@@ -43,7 +43,7 @@ def add_person():
 
 @driver_blue.route('/DoUpdatePerson', methods=['POST'])
 def update_guest_driver():
-    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": None}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
@@ -74,7 +74,7 @@ def update_guest_driver():
 
 @driver_blue.route('/DoAddPhoto', methods=['POST'])
 def add_new_photo_driver():
-    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": None}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
