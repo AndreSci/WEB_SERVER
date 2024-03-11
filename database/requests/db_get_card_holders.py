@@ -29,7 +29,7 @@ class CardHoldersDB:
                 request_activity = cur.fetchall()
 
                 if len(request_activity) == 0:
-                    ret_value["desc"] = "Не удалось найти данные CardHoldersDB.get_sac3"
+                    ret_value["desc"] = "Не удалось найти данные."
                 else:
                     ret_value["desc"] = "Успешно"
                     ret_value["status"] = True
@@ -37,7 +37,7 @@ class CardHoldersDB:
             connection.close()
 
         except Exception as ex:
-            ret_value["desc"] = "Ошибка работы с базой данных CardHoldersDB.get_sac3"
+            ret_value["desc"] = "Возникла ошибка при попытке получить данные"
             logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
@@ -73,10 +73,10 @@ class CardHoldersDB:
                 ret_value["data"] = ret_res
                 ret_value["desc"] = "Успешно"
             else:
-                ret_value["desc"] = "Не удалось найти информацию CardHoldersDB.get_fdb"
+                ret_value["desc"] = "Не удалось найти информацию"
 
         except Exception as ex:
-            ret_value["desc"] = "Ошибка работы с базой данных CardHoldersDB.get_fdb"
+            ret_value["desc"] = "Ошибка работы с базой данных"
             logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
@@ -102,7 +102,7 @@ class CardHoldersDB:
                 request_activity = cur.fetchall()
 
                 if len(request_activity) == 0:
-                    ret_value["desc"] = "Не удалось найти данные CardHoldersDB.get_with_face"
+                    ret_value["desc"] = "Не удалось найти данные"
                 else:
                     ret_value["desc"] = "Успешно"
                     ret_value["status"] = True
@@ -115,7 +115,7 @@ class CardHoldersDB:
                     ret_value["data"] = ret_list
 
         except Exception as ex:
-            ret_value["desc"] = "Ошибка работы с базой данных CardHoldersDB.get_with_face"
+            ret_value["desc"] = "Ошибка работы с базой данных"
             logger.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
