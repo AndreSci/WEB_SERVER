@@ -55,7 +55,7 @@ def it_face_route():
 @face_blue.route('/GetGuestPhotoByInviteCode', methods=['GET'])
 def get_guest_photo():
     """ Получить фото гостя """
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": None}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ''}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)

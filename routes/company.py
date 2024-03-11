@@ -11,7 +11,7 @@ company_blue = Blueprint('company_blue', __name__, template_folder='templates', 
 def add_comp_contact():
     """ Добавляет данные компаний (новая запись в БД является главной) """
 
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": None}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ''}
 
     user_ip = request.remote_addr
     logger.info(f"Запрос от ip: {user_ip}", print_it=False)
@@ -43,7 +43,7 @@ def add_comp_contact():
 def get_comp_contact():
     """ Получает данные по компании из поля sac3.companycontact """
 
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": None}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ''}
 
     user_ip = request.remote_addr
     logger.info(f"Запрос от ip: {user_ip}", print_it=False)

@@ -79,7 +79,7 @@ def do_create_guest():
 def do_block_guest():
     """ Блокирует заявку на посетителя """
 
-    json_replay = {'RESULT': 'ERROR', 'DESC': '', 'DATA': None}
+    json_replay = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}
 
     user_ip = request.remote_addr
     LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
