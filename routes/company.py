@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 from misc.consts import ALLOW_IP, ERROR_ACCESS_IP
 from misc.logger import Logger
 from database.requests.db_company import CompanyDB
+from typing import Any
 
 logger = Logger()
 company_blue = Blueprint('company_blue', __name__, template_folder='templates', static_folder='static')
@@ -13,7 +14,7 @@ company_blue = Blueprint('company_blue', __name__, template_folder='templates', 
 def add_comp_contact():
     """ Добавляет данные компаний (новая запись в БД является главной) """
 
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": Any}
 
     user_ip = request.remote_addr
     logger.info(f"Запрос от ip: {user_ip}", print_it=False)
@@ -45,7 +46,7 @@ def add_comp_contact():
 def get_comp_contact():
     """ Получает данные по компании из поля sac3.companycontact """
 
-    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+    ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": Any}
 
     user_ip = request.remote_addr
     logger.info(f"Запрос от ip: {user_ip}", print_it=False)
