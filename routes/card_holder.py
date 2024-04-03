@@ -48,7 +48,7 @@ class JsonGuest:
         return json_guest
 
 @card_holder_blue.route('/DoGetCardHolders', methods=['GET'])
-def get_card_holder():
+def get_card_holders():
     """ Функция возвращает список сотрудников компании """
 
     user_ip = request.remote_addr
@@ -81,13 +81,13 @@ def get_card_holder():
 
             con_db = CardHoldersDB()
 
-            # Запрос в БД sac3
-            db_sac3 = CardHoldersDB.get_sac3(account_id, LOGGER)
+            # Проверяем компанию в БД sac3
+            check_result = CardHoldersDB.check_account_sac3(account_id, LOGGER)
 
-            if db_sac3["status"]:
+            if check_result["status"]:
 
                 # Запрос в БД FIREBIRD
-                db_fdb = con_db.get_fdb(finn, LOGGER)
+                db_fdb = con_db.get_from_fdb(finn, LOGGER)
 
                 json_replay["DESC"] = db_fdb["desc"]
 
@@ -115,9 +115,8 @@ def get_card_holder():
                         ret_list_id.append(it)
 
                     json_replay["DATA"] = ret_list_id
-
             else:
-                json_replay["DESC"] = db_sac3["desc"]
+                json_replay["DESC"] = check_result["desc"]
 
     return jsonify(json_replay)
 
@@ -229,8 +228,8 @@ def create_card_holder():
 
                                     if res_guest_json.get('RESULT') == 'SUCCESS':
                                         ret_value['RESULT'] = "WARNING"
-                                        ret_value['DESC'] = ("Успешно создан сотрудник без фото. "
-                                                             "Требуется авторизации по коду.")
+                                        ret_value['DESC'] = ("Заявка создана. Необходимо завершить регистрацию "
+                                                             "на стойке администратора.")
                                         ret_value['DATA']['FInviteCode'] = res_guest_json.get('FInviteCode')
                                         LOGGER.event(f"Успешно создан сотрудник для ИНН{class_guest.inn}: {res_guest_json}")
                                     else:

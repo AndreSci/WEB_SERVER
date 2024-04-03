@@ -10,8 +10,8 @@ class CardHoldersDB:
         self.connection_is_fdb = 0
 
     @staticmethod
-    def get_sac3(account_id: str, logger: Logger) -> dict:
-        """ Принимает id и logger """
+    def check_account_sac3(account_id: str, logger: Logger) -> dict:
+        """ Функция запрашивает данные аккаунта компании """
 
         ret_value = {"status": False, "desc": ''}
 
@@ -42,8 +42,8 @@ class CardHoldersDB:
 
         return ret_value
 
-    def get_fdb(self, finn: str, logger: Logger) -> dict:
-        """ Принимает ИНН компании и logger """
+    def get_from_fdb(self, finn: str, logger: Logger) -> dict:
+        """ Функция запрашивает из БД firebird список сотрудников на компанию """
 
         ret_value = {"status": False, "data": list(), "desc": ''}
 
@@ -63,7 +63,6 @@ class CardHoldersDB:
             res_size = len(res)
 
             if res_size:
-
                 ret_res = list()
                 for it in res:
                     ret_res.append({"fid": str(it[0]),
