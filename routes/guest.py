@@ -50,7 +50,7 @@ def do_create_guest():
                     ret_value['FInviteCode'] = res_code_gen['DATA'].get("InviteCode")
 
             # Результат из БД
-            db_result = CreateGuestDB.add_guest(json_request, LOGGER)
+            db_result = CreateGuestDB.add_guest(json_request)
 
             # отправляем СМС если есть номер телефона в заявке
             # if json_request.get("FPhone") and db_result["status"] == 'SUCCESS':
@@ -93,7 +93,7 @@ def do_block_guest():
 
             LOGGER.info(f"Получены данные: ({json_request})", print_it=False)
 
-            json_replay = CreateGuestDB.block_guest(json_request.get('FAccountID'), json_request.get('FID'), LOGGER)
+            json_replay = CreateGuestDB.block_guest(json_request.get('FAccountID'), json_request.get('FID'))
 
             if json_replay['FACE_DRIVER']:
                 connect_driver = FaceDriver(ConstControl.get_set_ini())
@@ -128,7 +128,7 @@ def change_access_time():
 
             # Создаем запрос к БД с просьбой изменить дату доступа гостя
             json_replay = CreateGuestDB.change_time_access(json_request.get('FAccountID'), json_request.get('FID'),
-                                                           LOGGER, json_request.get('DateTimeFrom'),
+                                                           json_request.get('DateTimeFrom'),
                                                            json_request.get('DateTimeTo'))
         else:
             LOGGER.error(f"Ошибка чтения Json: В запросе нет данных")

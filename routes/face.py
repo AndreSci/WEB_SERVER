@@ -69,7 +69,7 @@ def get_guest_photo():
             request_data = request.args
 
             # Получаем FID гостя
-            db_result = CreateGuestDB.get_photo(request_data.get('InviteCode'), LOGGER)
+            db_result = CreateGuestDB.get_photo(request_data.get('InviteCode'))
 
             if db_result['RESULT']:
                 id_guest = db_result['DATA'].get('FID')

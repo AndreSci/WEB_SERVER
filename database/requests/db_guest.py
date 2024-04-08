@@ -3,6 +3,8 @@ from database.db_connection import connect_db
 from misc.car_number_fix import NormalizeCar
 from misc.fio_fix import FioFix
 
+LOGGER = Logger()
+
 SUCCESS_GUEST_ADDED = 'guest_added'
 ERROR_ANY_ERROR = 'any_error'
 ACCESS_DENIED_REGISTRATION_DENIAL = 'registration_denial'
@@ -41,7 +43,7 @@ def do_request_str(last_name, first_name, middle_name, car_number, remote_id, ac
 class CreateGuestDB:
     """ Класс работы с гостем """
     @staticmethod
-    def add_guest(data_on_pass: dict, logger: Logger) -> dict:
+    def add_guest(data_on_pass: dict) -> dict:
         """ принимает словарь с данными от on_pass и logger """
 
         ret_value = {"status": "ERROR", "desc": '', "data": ''}
@@ -61,7 +63,7 @@ class CreateGuestDB:
             try:
                 last_name, first_name, middle_name = FioFix().do_normal(last_name, first_name, middle_name)
             except Exception as ex:
-                logger.exception(f"Исключение в попытке поправить Ф.И.О.: {ex}")
+                LOGGER.exception(f"Исключение в попытке поправить Ф.И.О.: {ex}")
 
             # car_number = data_on_pass['FCarNumber']
             car_number = data_on_pass.get("FCarNumber")
@@ -89,7 +91,7 @@ class CreateGuestDB:
                 phone_number = ''
 
         except Exception as ex:
-            logger.exception(f"Ошибка обработки данных для SQL: {ex}")
+            LOGGER.exception(f"Ошибка обработки данных для SQL: {ex}")
             ret_value['desc'] = "Ошибка обработки данных для SQL"
             return ret_value
 
@@ -138,7 +140,7 @@ class CreateGuestDB:
                     ret_value["status"] = "ACCESS_DENIED"
                     ret_value["desc"] = ACCESS_DENIED_REGISTRATION_DENIAL
 
-                    logger.add_log(f"WARNING\tCreateGuestDB.add_guest - "
+                    LOGGER.add_log(f"WARNING\tCreateGuestDB.add_guest - "
                                    f"Регистрация заявки отклонена AccountID: {account_id}. "
                                    f"Компания/Аккаунт не найден(а) или имеет ограничения.")
 
@@ -148,7 +150,7 @@ class CreateGuestDB:
                     ret_value["desc"] = WARNING_IS_EXIST
 
                     ret_value["data"] = is_exist[0]
-                    logger.add_log(f"WARNING\tCreateGuestDB.add_guest - Ошибка RemoteID: {remote_id} уже занят.")
+                    LOGGER.add_log(f"WARNING\tCreateGuestDB.add_guest - Ошибка RemoteID: {remote_id} уже занят.")
 
                 elif len(is_blocked) != 0:
                     ret_value["status"] = "IS_BLOCKED"
@@ -158,19 +160,19 @@ class CreateGuestDB:
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 0,
                                                     date_from, date_to, account_id, phone_number, invite_code,
                                                  block_by_out)
-                    logger.info(sql_request, print_it=False)
+                    LOGGER.info(sql_request, print_it=False)
 
                     # Загружаем данные в базу
                     cur.execute(sql_request)
 
                     connection.commit()
-                    logger.add_log(f"WARNING\tCreateGuestDB.add_guest - Номер {car_number} в черном списке.")
+                    LOGGER.add_log(f"WARNING\tCreateGuestDB.add_guest - Номер {car_number} в черном списке.")
                 else:
                     # Формируем запрос
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
                                                     date_from, date_to, account_id, phone_number, invite_code,
                                                  block_by_out)
-                    logger.info(sql_request, print_it=False)
+                    LOGGER.info(sql_request, print_it=False)
                     # Загружаем данные в базу
                     cur.execute(sql_request)
 
@@ -184,7 +186,7 @@ class CreateGuestDB:
 
                     ret_value["data"] = is_exist[0]
 
-                    logger.add_log(f"EVENT\tCreateGuestDB.add_guest - "
+                    LOGGER.add_log(f"EVENT\tCreateGuestDB.add_guest - "
                                    f"Успешно добавлен GUEST в базу данных Account_ID: {account_id}")
                     ret_value["status"] = "SUCCESS"
                     ret_value["desc"] = SUCCESS_GUEST_ADDED
@@ -192,13 +194,13 @@ class CreateGuestDB:
             connection.close()
 
         except Exception as ex:
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
             ret_value["desc"] = EXCEPTION_DB_TXT
 
         return ret_value
 
     @staticmethod
-    def get_photo(invite_code: str, logger: Logger) -> dict:
+    def get_photo(invite_code: str) -> dict:
 
         ret_value = {"RESULT": False, "DESC": '', 'DATA': dict()}
 
@@ -231,12 +233,12 @@ class CreateGuestDB:
 
         except Exception as ex:
             ret_value["DESC"] = EXCEPTION_DB_TXT
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
     @staticmethod
-    def block_guest(account_id: int, remote_id: int, logger: Logger) -> dict:
+    def block_guest(account_id: int, remote_id: int) -> dict:
         """ Заблокировать заявку на посетителя. /n
         Так же имеется флаг в ответе для запроса на удаление персоны из терминалов распознания лица.
         RESULT: STR / DESC: STR / DATA: DISC / FACE_DRIVER: BOOL """
@@ -258,7 +260,7 @@ class CreateGuestDB:
 
                 if len(request_activity) == 0:
                     ret_value["DESC"] = "Компания/Аккаунт не найден(а) или имеет ограничения."
-                    logger.add_log(f"WARNING\tCreateGuestDB.del_guest\tРегистрация заявки отклонена "
+                    LOGGER.add_log(f"WARNING\tCreateGuestDB.del_guest\tРегистрация заявки отклонена "
                                    f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
                 else:
                     # Получаем данные активной заявки на гостя
@@ -280,7 +282,7 @@ class CreateGuestDB:
 
                     if len(guest_res) > 1:
                         ret_value['DESC'] = f"По какой то причине в БД было больше одной заявки с id = {remote_id}"
-                        logger.add_log(f"WARNING\tCreateGuestDB.del_guest\tПо какой то причине в БД было больше одной "
+                        LOGGER.add_log(f"WARNING\tCreateGuestDB.del_guest\tПо какой то причине в БД было больше одной "
                                        f"заявки с id = {remote_id}")
 
                     if len(guest_res) > 0:
@@ -334,12 +336,12 @@ class CreateGuestDB:
 
         except Exception as ex:
             ret_value['DESC'] = EXCEPTION_DB_TXT
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
     @staticmethod  # Тестовая функция для проверки блокировки гостя
-    def unblock_guest(account_id: int, remote_id: int, logger: Logger) -> dict:
+    def unblock_guest(account_id: int, remote_id: int) -> dict:
         """ Разблокировать заявку на посетителя. """
 
         ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict(), 'FACE_DRIVER': False}
@@ -359,7 +361,7 @@ class CreateGuestDB:
 
                 if len(request_activity) == 0:
                     ret_value["DESC"] = "Компания/Аккаунт не найден(а) или имеет ограничения."
-                    logger.add_log(f"WARNING\tCreateGuestDB.unblock_guest\tРегистрация заявки отклонена "
+                    LOGGER.add_log(f"WARNING\tCreateGuestDB.unblock_guest\tРегистрация заявки отклонена "
                                    f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
                 else:
                     cur.execute(f"update sac3.tguest set FActivity = 1 "
@@ -375,12 +377,12 @@ class CreateGuestDB:
 
         except Exception as ex:
             ret_value['DESC'] = EXCEPTION_DB_TXT
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
     @staticmethod  # Тестовая функция для проверки блокировки гостя
-    def delete_guest(account_id: int, remote_id: int, logger: Logger) -> dict:
+    def delete_guest(account_id: int, remote_id: int) -> dict:
         """ Удалить заявку на посетителя. """
 
         ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict()}
@@ -400,7 +402,7 @@ class CreateGuestDB:
 
                 if len(request_activity) == 0:
                     ret_value["DESC"] = "Компания/Аккаунт не найден(а) или имеет ограничения."
-                    logger.add_log(f"WARNING\tCreateGuestDB.unblock_guest\tРегистрация заявки отклонена "
+                    LOGGER.add_log(f"WARNING\tCreateGuestDB.unblock_guest\tРегистрация заявки отклонена "
                                    f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
                 else:
 
@@ -423,18 +425,18 @@ class CreateGuestDB:
                         msg = f"Требуется ручная проверка БД, " \
                                             f"найдено больше 1 заявки с FRemoteID = {remote_id}"
                         ret_value["DESC"] = msg
-                        logger.exception(f"Ошибка работы с базой данных: {msg}")
+                        LOGGER.exception(f"Ошибка работы с базой данных: {msg}")
                     else:
                         ret_value['DESC'] = f"Не удалось найти заявку по FRemoteID = {remote_id}"
 
         except Exception as ex:
             ret_value['DESC'] = EXCEPTION_DB_TXT
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
     @staticmethod  # Тестовая функция для проверки блокировки гостя
-    def add_person_guest(f_name: str, remote_id: int, logger: Logger) -> dict:
+    def add_person_guest(f_name: str, remote_id: int) -> dict:
         """ Имитация получения пропуска Гостем """
 
         ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict()}
@@ -463,12 +465,12 @@ class CreateGuestDB:
         except Exception as ex:
             ret_value['DESC'] = EXCEPTION_DB_TXT
 
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
     @staticmethod  # Тестовая функция для проверки блокировки гостя
-    def add_pass_guest(station_id: int, person_id: int, logger: Logger) -> dict:
+    def add_pass_guest(station_id: int, person_id: int) -> dict:
         """ Имитация проход Гостя """
 
         ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict()}
@@ -490,13 +492,12 @@ class CreateGuestDB:
 
         except Exception as ex:
             ret_value['DESC'] = EXCEPTION_DB_TXT
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
     @staticmethod
-    def change_time_access(account_id: int, remote_id: int, logger: Logger,
-                           time_from: str = None, time_to: str = None) -> dict:
+    def change_time_access(account_id: int, remote_id: int, time_from: str = None, time_to: str = None) -> dict:
         """ Изменить время действие временного пропуска """
 
         ret_value = {'RESULT': "ERROR", 'DESC': '', 'DATA': dict(), 'FACE_DRIVER': False}
@@ -516,7 +517,7 @@ class CreateGuestDB:
 
             if len(request_activity) == 0:
                 ret_value["DESC"] = "Компания/Аккаунт не найден(а) или имеет ограничения."
-                logger.add_log(f"WARNING\tCreateGuestDB.change_time_access\tРегистрация заявки отклонена "
+                LOGGER.add_log(f"WARNING\tCreateGuestDB.change_time_access\tРегистрация заявки отклонена "
                                f"AccountID: {account_id}. Компания/Аккаунт не найден(а) или имеет ограничения.")
             else:
                 # Получаем данные активной заявки на гостя
@@ -547,19 +548,19 @@ class CreateGuestDB:
                     else:
                         ret_value["RESULT"] = "WARNING"
                         ret_value['DESC'] = f"Внесено изменений: {cur.rowcount} (должно быть 1)"
-                        logger.event(f"В БД было внесено: {cur.rowcount}! Данные: remote_id: {remote_id} "
+                        LOGGER.event(f"В БД было внесено: {cur.rowcount}! Данные: remote_id: {remote_id} "
                                      f"account_id: {account_id} time_from: {time_from} time_to: {time_to}")
                 else:
                     ret_value['DESC'] = "Не удалось найти заявку"
 
         except Exception as ex:
             ret_value['DESC'] = EXCEPTION_DB_TXT
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
 
     @staticmethod
-    def check_invite_code(invite_code: int, logger: Logger) -> dict:
+    def check_invite_code(invite_code: int) -> dict:
 
         ret_value = {"RESULT": False, "DESC": '', 'DATA': list()}
 
@@ -579,6 +580,6 @@ class CreateGuestDB:
 
         except Exception as ex:
             ret_value["DESC"] = EXCEPTION_DB_TXT
-            logger.exception(f"{EXCEPTION_DB_TXT}: {ex}")
+            LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value

@@ -12,7 +12,7 @@ def gen_invite_code() -> dict:
     while True:
         index += 1
         invite_code = random.randint(100000, 999999)
-        from_db_res = CreateGuestDB.check_invite_code(invite_code, LOGGER)
+        from_db_res = CreateGuestDB.check_invite_code(invite_code)
 
         if from_db_res['RESULT']:
             ret_value['RESULT'] = True
