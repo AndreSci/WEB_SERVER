@@ -40,7 +40,7 @@ def add_employee_photo():
                 LOGGER.exception(f"Не удалось проверить фото! {ex}")
 
             # Отправляем запрос на получение данных сотрудника
-            res_base_helper = con_helper.get_card_holder(res_json, activity, LOGGER)
+            res_base_helper = con_helper.get_card_holder(res_json, activity)
             result = res_base_helper.get("RESULT")
 
             LOGGER.event(f"После BaseHelper "
@@ -72,7 +72,7 @@ def add_employee_photo():
                         result = 'DRIVER'
 
                         # отменяем заявку в базе через base_helper
-                        con_helper.deactivate_person(res_json, LOGGER)
+                        con_helper.deactivate_person(res_json)
                         LOGGER.warning(f"Отмена пропуска в BaseHelper "
                                        f"из-за ошибки на Драйвере распознания лиц")
 
@@ -155,7 +155,7 @@ def delete_person():
 
             # Отправляем запрос на удаление данных сотрудника
             con_helper = BSHelper(ConstControl.get_set_ini())
-            res_base_helper = con_helper.deactivate_person_apacsid(res_json, LOGGER)
+            res_base_helper = con_helper.deactivate_person_apacsid(res_json)
             result = res_base_helper.get("RESULT")
 
             if result == "SUCCESS" or result == "WARNING":
