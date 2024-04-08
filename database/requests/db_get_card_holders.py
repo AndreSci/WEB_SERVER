@@ -1,6 +1,8 @@
 from misc.logger import Logger
 from database.db_connection import connect_db, connect_fire_bird_db
 
+LOGGER = Logger()
+
 
 class CardHoldersDB:
     # функция отправки данных для таблицы sac3.tguest
@@ -10,7 +12,7 @@ class CardHoldersDB:
         self.connection_is_fdb = 0
 
     @staticmethod
-    def check_account_sac3(account_id: str, logger: Logger) -> dict:
+    def check_account_sac3(account_id: str) -> dict:
         """ Функция запрашивает данные аккаунта компании """
 
         ret_value = {"status": False, "desc": ''}
@@ -38,11 +40,11 @@ class CardHoldersDB:
 
         except Exception as ex:
             ret_value["desc"] = "Возникла ошибка при попытке получить данные"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            LOGGER.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
 
-    def get_from_fdb(self, finn: str, logger: Logger) -> dict:
+    def get_from_fdb(self, finn: str) -> dict:
         """ Функция запрашивает из БД firebird список сотрудников на компанию """
 
         ret_value = {"status": False, "data": list(), "desc": ''}
@@ -76,11 +78,11 @@ class CardHoldersDB:
 
         except Exception as ex:
             ret_value["desc"] = "Ошибка работы с базой данных"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            LOGGER.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
 
-    def get_with_face(self, remote_id: list, logger: Logger) -> dict:
+    def get_with_face(self, remote_id: list) -> dict:
         """ Принимает id и logger """
 
         ret_value = {"status": False, "desc": '', "data": dict()}
@@ -115,6 +117,6 @@ class CardHoldersDB:
 
         except Exception as ex:
             ret_value["desc"] = "Ошибка работы с базой данных"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            LOGGER.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value

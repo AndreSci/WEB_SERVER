@@ -82,12 +82,12 @@ def get_card_holders():
             con_db = CardHoldersDB()
 
             # Проверяем компанию в БД sac3
-            check_result = CardHoldersDB.check_account_sac3(account_id, LOGGER)
+            check_result = CardHoldersDB.check_account_sac3(account_id)
 
             if check_result["status"]:
 
                 # Запрос в БД FIREBIRD
-                db_fdb = con_db.get_from_fdb(finn, LOGGER)
+                db_fdb = con_db.get_from_fdb(finn)
 
                 json_replay["DESC"] = db_fdb["desc"]
 
@@ -101,7 +101,7 @@ def get_card_holders():
                     for it in db_fdb['data']:
                         list_id.append(it["fid"])
 
-                    face_db = con_db.get_with_face(list_id, LOGGER)
+                    face_db = con_db.get_with_face(list_id)
 
                     ret_list_id = list()
 
