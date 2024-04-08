@@ -31,12 +31,11 @@ def add_employee_photo():
 
             # Если нет фото, считается что сотрудник сам добавить фото позднее
             activity = 0
+            img64 = res_json.get('img64')
 
             try:  # Проверяем наличие фото для активации сотрудника в БД
-                if len(res_json['img64']) > 100:
+                if img64 and len(img64) > 100:
                     activity = 1
-                    print(f"ТЕСТОВАЯ ЗАПИСЬ : {activity} - {len(res_json['img64'])}")
-
             except Exception as ex:
                 LOGGER.exception(f"Не удалось проверить фото! {ex}")
 

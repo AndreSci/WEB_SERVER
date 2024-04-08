@@ -2,7 +2,7 @@ from database.requests.db_guest import CreateGuestDB
 from flask import Blueprint, request, jsonify
 from misc.consts import LOGGER, ALLOW_IP, ERROR_ACCESS_IP, ERROR_READ_JSON, ConstControl
 from database.driver.rest_driver import FaceDriver
-from misc.car_number_test import NormalizeCar
+from misc.car_number_fix import NormalizeCar
 from misc.invite_code import gen_invite_code
 
 from database.requests.db_company import CompanyDB

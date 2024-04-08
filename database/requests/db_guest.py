@@ -1,6 +1,7 @@
 from misc.logger import Logger
 from database.db_connection import connect_db
-from misc.car_number_test import NormalizeCar
+from misc.car_number_fix import NormalizeCar
+from misc.fio_fix import FioFix
 
 SUCCESS_GUEST_ADDED = 'guest_added'
 ERROR_ANY_ERROR = 'any_error'
@@ -56,6 +57,11 @@ class CreateGuestDB:
 
             # middle_name = data_on_pass['FMiddleName']
             middle_name = data_on_pass.get("FMiddleName")
+
+            try:
+                last_name, first_name, middle_name = FioFix().do_normal(last_name, first_name, middle_name)
+            except Exception as ex:
+                logger.exception(f"Исключение в попытке поправить Ф.И.О.: {ex}")
 
             # car_number = data_on_pass['FCarNumber']
             car_number = data_on_pass.get("FCarNumber")
