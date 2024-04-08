@@ -379,7 +379,7 @@ def get_block_car():
 
             LOGGER.info(f"Получены данные: ({json_request})", print_it=False)
 
-            json_replay = CompanyDB.get_block_car(com_fid, LOGGER)
+            json_replay = CompanyDB.get_block_car(com_fid)
 
         except Exception as ex:
             # Если в запросе нет Json данных

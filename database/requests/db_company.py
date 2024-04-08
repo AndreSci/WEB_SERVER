@@ -9,7 +9,7 @@ LOGGER = Logger()
 class CompanyDB:
 
     @staticmethod
-    def get_block_car(account_id: str, logger: Logger) -> dict:
+    def get_block_car(account_id: str) -> dict:
         """ Принимает FID аккаунта/компании и возвращает информацию о поле 'FBlockCar' """
 
         ret_value = RET_VALUE
@@ -45,7 +45,7 @@ class CompanyDB:
 
         except Exception as ex:
             ret_value["DESC"] = "Ошибка работы с БД"
-            logger.exception(f"Ошибка работы с базой данных: {ex}")
+            LOGGER.exception(f"Ошибка работы с базой данных: {ex}")
 
         return ret_value
 
@@ -77,9 +77,7 @@ class CompanyDB:
             ret_value['DESC'] = f"Ошибку вызвало: {ex}"
             LOGGER.exception(f"Ошибку вызвало: {ex}")
 
-
         return ret_value
-
 
     @staticmethod
     def add_contact(data: dict) -> dict:
@@ -132,7 +130,6 @@ class CompanyDB:
         except Exception as ex:
             ret_value['DESC'] = f"Ошибку вызвало: {ex}"
             LOGGER.exception(f"Ошибку вызвало: {ex}")
-
 
         return ret_value
 
@@ -190,6 +187,5 @@ class CompanyDB:
 
             ret_value['DESC'] = f"Ошибку вызвало: {ex}"
             LOGGER.exception(f"Ошибку вызвало: {ex}")
-
 
         return ret_value

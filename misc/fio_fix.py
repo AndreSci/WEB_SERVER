@@ -29,5 +29,7 @@ class FioFix:
 
 
 if __name__ == "__main__":
-
-    print(FioFix().do_normal("\tИванов", " иван", "Иван:ович"))
+    str_i = ("{'FAccountID': 1819, 'FLastName': 'Борувкова', 'FFirstName': 'Светлана ', 'FDateFrom': '2024-04-08', "
+             "'FDateTo': '2024-04-09', 'FInviteCode': 180355, 'FRemoteID': 285258, "
+             "'FMiddleName': 'Викторовна', 'FCarNumber': ''})")
+    print(FioFix().do_normal('Борувкова', ' Светлана ', 'Викторовна'))

@@ -49,7 +49,7 @@ def web_flask():
     # Меняем имя терминала
     ctypes.windll.kernel32.SetConsoleTitleW(f"REST API interface port: {SET_INI['port']} - (using OpenCV)")
 
-    LOGGER.add_log(f"SUCCESS\tweb_flask\tСервер WEB_Flask начал свою работу")  # log
+    LOGGER.event(f"Сервер WEB_Flask начал свою работу")
 
     # RUN SERVER FLASK  ------
     app.run(debug=False, host=SET_INI["host"], port=int(SET_INI["port"]))
