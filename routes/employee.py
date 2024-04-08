@@ -65,7 +65,7 @@ def add_employee_photo():
 
                     # подключаемся к драйверу Распознания лиц
                     connect_driver = FaceDriver(ConstControl.get_set_ini())
-                    res_driver = connect_driver.add_person_with_face(res_json, LOGGER)
+                    res_driver = connect_driver.add_person_with_face(res_json)
 
                     if res_driver["RESULT"] == "ERROR":
                         ret_value['DATA'] = res_driver['DATA']
@@ -164,7 +164,7 @@ def delete_person():
 
                 # создаем и подключаемся к драйверу Коли
                 connect_driver = FaceDriver(ConstControl.get_set_ini())
-                res_driver = connect_driver.delete_person(res_json, LOGGER)
+                res_driver = connect_driver.delete_person(res_json)
 
                 if res_driver['RESULT'] == "SUCCESS":
                     json_replay["RESULT"] = "SUCCESS"

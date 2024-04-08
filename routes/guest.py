@@ -97,7 +97,7 @@ def do_block_guest():
 
             if json_replay['FACE_DRIVER']:
                 connect_driver = FaceDriver(ConstControl.get_set_ini())
-                res_driver = connect_driver.delete_person(json_replay['DATA'], LOGGER)
+                res_driver = connect_driver.delete_person(json_replay['DATA'])
 
                 if res_driver['RESULT'] != "SUCCESS":
                     json_replay['DESC'] += res_driver['DESC']

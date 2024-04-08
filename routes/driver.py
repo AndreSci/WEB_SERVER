@@ -26,7 +26,7 @@ def add_person():
 
             # создаем и подключаемся к драйверу Коли
             connect_driver = FaceDriver(ConstControl.get_set_ini())
-            result = connect_driver.add_person(res_json, LOGGER)
+            result = connect_driver.add_person(res_json)
 
             if result == "SUCCESS":
                 json_replay["RESULT"] = "SUCCESS"
@@ -57,7 +57,7 @@ def update_guest_driver():
 
             # создаем и подключаемся к драйверу Коли
             connect_driver = FaceDriver(ConstControl.get_set_ini())
-            result = connect_driver.update_person(res_json, LOGGER)
+            result = connect_driver.update_person(res_json)
 
             if result == "SUCCESS":
                 json_replay["RESULT"] = "SUCCESS"
@@ -88,7 +88,7 @@ def add_new_photo_driver():
 
             # создаем и подключаемся к драйверу Коли
             connect_driver = FaceDriver(ConstControl.get_set_ini())
-            result = connect_driver.add_face(res_json, LOGGER)
+            result = connect_driver.add_face(res_json)
 
             if result['RESULT'] == "SUCCESS":
                 json_replay["RESULT"] = "SUCCESS"
