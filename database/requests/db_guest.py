@@ -1,5 +1,6 @@
 from misc.logger import Logger
 from database.db_connection import connect_db
+from misc.car_number_test import NormalizeCar
 
 SUCCESS_GUEST_ADDED = 'guest_added'
 ERROR_ANY_ERROR = 'any_error'
@@ -16,6 +17,12 @@ def do_request_str(last_name, first_name, middle_name, car_number, remote_id, ac
 
     if not block_by_out:  # Заглушка
         block_by_out = 0
+
+    try:
+        if str(date_to) == str(date_from) and len(str(date_to)) == 10:
+            date_to = date_to + " 23:59:59"
+    except Exception as ex:
+        print(f"Исключение в функции подготовки SQL запроса {ex}")
 
     req_str = f"insert into sac3.tguest(" \
                 f"FLastName, FFirstName, FMiddleName, " \
@@ -64,10 +71,14 @@ class CreateGuestDB:
             # Block by output (метод разового прохода)
             block_by_out = data_on_pass.get("FBlockByOutput")
 
+            # logger.event(f"date_from: {date_from} and date_to: {date_to}")
+
             if not middle_name:
                 middle_name = ''
             if not car_number:
                 car_number = ''
+            else:
+                car_number = NormalizeCar().do_normal(str(car_number))
             if not phone_number:
                 phone_number = ''
 
@@ -141,6 +152,8 @@ class CreateGuestDB:
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 0,
                                                     date_from, date_to, account_id, phone_number, invite_code,
                                                  block_by_out)
+                    logger.info(sql_request, print_it=False)
+
                     # Загружаем данные в базу
                     cur.execute(sql_request)
 
@@ -151,6 +164,7 @@ class CreateGuestDB:
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
                                                     date_from, date_to, account_id, phone_number, invite_code,
                                                  block_by_out)
+                    logger.info(sql_request, print_it=False)
                     # Загружаем данные в базу
                     cur.execute(sql_request)
 

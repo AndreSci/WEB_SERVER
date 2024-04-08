@@ -5,6 +5,7 @@ from database.db_connection import connect_db
 RET_VALUE = {"RESULT": "ERROR", "DESC": '', "DATA": dict()}
 LOGGER = Logger()
 
+
 class CompanyDB:
 
     @staticmethod
