@@ -186,7 +186,7 @@ class CreateGuestDB:
 
                     if sql_request.get('result'):
                         # Загружаем данные в базу
-                        cur.execute(sql_request)
+                        cur.execute(sql_request.get("text"))
 
                         connection.commit()
                         LOGGER.add_log(f"WARNING\tCreateGuestDB.add_guest - Номер {car_number} в черном списке.")
@@ -201,7 +201,7 @@ class CreateGuestDB:
 
                     if sql_request.get("result"):
                         # Загружаем данные в базу
-                        cur.execute(sql_request)
+                        cur.execute(sql_request.get("text"))
 
                         connection.commit()
 
