@@ -65,7 +65,7 @@ class Logger(metaclass=SingletonBaseClass):
 
             for_file_name = str(today.strftime("%Y-%m-%d"))
 
-            date_time = str(today.strftime("%Y-%m-%d/%H.%M.%S"))
+            date_time = str(today.strftime("%Y-%m-%d %H:%M:%S"))
             # Создаем лог
             mess = date_time + "\t" + text + "\n"
 

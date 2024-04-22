@@ -2,6 +2,7 @@ from misc.logger import Logger
 from database.db_connection import connect_db
 from misc.car_number_fix import NormalizeCar
 from misc.fio_fix import FioFix
+import datetime
 
 LOGGER = Logger()
 
@@ -13,21 +14,42 @@ WARNING_IS_EXIST = 'is_exist'
 
 EXCEPTION_DB_TXT = "Ошибка работы с базой данных"
 
+BLOCK_BY_OUTPUT = 0  # TODO поменять при релизе = 1
+
 
 # Создаем строку для запроса в БД
 def do_request_str(last_name, first_name, middle_name, car_number, remote_id, activity,
-                   date_from, date_to, account_id, phone_number, invite_code, block_by_out=0) -> str:
+                   date_from, date_to, account_id, phone_number, invite_code, block_by_out=0) -> dict:
+
+    ret_value = {"result": True, "text": '', 'desc': ''}
 
     if not block_by_out:  # Заглушка
-        block_by_out = 0
+        block_by_out = BLOCK_BY_OUTPUT
 
     try:
-        if str(date_to) == str(date_from) and len(str(date_to)) == 10:
-            date_to = date_to + " 23:59:59"
+        if len(date_from) < 10 or len(date_to) < 10:
+            raise KeyError('Дата должна быть формата: 2023-12-31')
+
+        start_date = datetime.datetime.strptime(date_from[:10], '%Y-%m-%d').date()
+        end_date = datetime.datetime.strptime(date_to[:10], '%Y-%m-%d').date()
+        delta_time = (end_date - start_date).days
+
+        if delta_time > 7:
+            date_to = (start_date + datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+
+    except Exception as ex:
+        msg = f"do_request_str | Ошибку вызвала попытка перестроить и проверить дату из request: {ex}"
+        ret_value['desc'] = msg
+        ret_value['result'] = False
+
+    try:
+        if ret_value['result']:
+            if str(date_to) == str(date_from) and len(str(date_to)) == 10:
+                date_to = date_to + " 23:59:59"
     except Exception as ex:
         print(f"Исключение в функции подготовки SQL запроса {ex}")
 
-    req_str = f"insert into sac3.tguest(" \
+    ret_value['text'] = f"insert into sac3.tguest(" \
                 f"FLastName, FFirstName, FMiddleName, " \
                 f"FCarNumber, FRemoteID, FActivity, " \
                 f"FDateCreate, FDateFrom, FDateTo, " \
@@ -37,7 +59,7 @@ def do_request_str(last_name, first_name, middle_name, car_number, remote_id, ac
                 f"{remote_id}, '{activity}', now(), " \
                 f"'{date_from}', '{date_to}', {account_id}, '{phone_number}', {invite_code}, {block_by_out})"
 
-    return req_str
+    return ret_value
 
 
 class CreateGuestDB:
@@ -162,34 +184,41 @@ class CreateGuestDB:
                                                  block_by_out)
                     LOGGER.info(sql_request, print_it=False)
 
-                    # Загружаем данные в базу
-                    cur.execute(sql_request)
+                    if sql_request.get('result'):
+                        # Загружаем данные в базу
+                        cur.execute(sql_request)
 
-                    connection.commit()
-                    LOGGER.add_log(f"WARNING\tCreateGuestDB.add_guest - Номер {car_number} в черном списке.")
+                        connection.commit()
+                        LOGGER.add_log(f"WARNING\tCreateGuestDB.add_guest - Номер {car_number} в черном списке.")
+                    else:
+                        ret_value['desc'] = sql_request.get('desc')
                 else:
                     # Формируем запрос
                     sql_request = do_request_str(last_name, first_name, middle_name, car_number, remote_id, 1,
                                                     date_from, date_to, account_id, phone_number, invite_code,
                                                  block_by_out)
                     LOGGER.info(sql_request, print_it=False)
-                    # Загружаем данные в базу
-                    cur.execute(sql_request)
 
-                    connection.commit()
+                    if sql_request.get("result"):
+                        # Загружаем данные в базу
+                        cur.execute(sql_request)
 
-                    # Получаем FID для ответа
-                    cur.execute(f"select FID "
-                                f"from sac3.tguest "
-                                f"where FRemoteID = %s", (remote_id, ))
-                    is_exist = cur.fetchall()
+                        connection.commit()
 
-                    ret_value["data"] = is_exist[0]
+                        # Получаем FID для ответа
+                        cur.execute(f"select FID "
+                                    f"from sac3.tguest "
+                                    f"where FRemoteID = %s", (remote_id, ))
+                        is_exist = cur.fetchall()
 
-                    LOGGER.add_log(f"EVENT\tCreateGuestDB.add_guest - "
-                                   f"Успешно добавлен GUEST в базу данных Account_ID: {account_id}")
-                    ret_value["status"] = "SUCCESS"
-                    ret_value["desc"] = SUCCESS_GUEST_ADDED
+                        ret_value["data"] = is_exist[0]
+
+                        LOGGER.add_log(f"EVENT\tCreateGuestDB.add_guest - "
+                                       f"Успешно добавлен GUEST в базу данных Account_ID: {account_id}")
+                        ret_value["status"] = "SUCCESS"
+                        ret_value["desc"] = SUCCESS_GUEST_ADDED
+                    else:
+                        ret_value['desc'] = sql_request.get('desc')
 
             connection.close()
 
@@ -583,3 +612,11 @@ class CreateGuestDB:
             LOGGER.exception(f"{EXCEPTION_DB_TXT}: {ex}")
 
         return ret_value
+
+
+if __name__ == "__main__":
+    print(do_request_str("ТестФ","ТестИ", "ТестО",
+                         "a777aa777", 12345, 1,
+                         "2024-04-25 22:12:00", "1980-5-1",
+                         1111, "+79991113322",
+                         555555, 1))
