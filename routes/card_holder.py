@@ -47,6 +47,7 @@ class JsonGuest:
 
         return json_guest
 
+
 @card_holder_blue.route('/DoGetCardHolders', methods=['GET'])
 def get_card_holders():
     """ Функция возвращает список сотрудников компании """
@@ -151,6 +152,8 @@ def create_card_holder():
             class_guest.inn = convert_word(json_request.get("inn"))
             class_guest.car_number = convert_word(json_request.get("Car_Number"))
             class_guest.img64 = json_request.get('img64')
+            class_guest.date_from = datetime.datetime.now().strftime("%Y-%m-%d")
+            class_guest.date_to = (datetime.datetime.now() + datetime.timedelta(days=7)).strftime('%Y-%m-%d')
             photo_img64 = 0
 
             try:
@@ -385,5 +388,64 @@ def get_block_car():
             # Если в запросе нет Json данных
             LOGGER.error(f"Ошибка чтения Json: В запросе нет {ex}")
             json_replay["DESC"] = "Ошибка в работе системы"
+
+    return jsonify(json_replay)
+
+
+@card_holder_blue.route('/DoGetEmployeesD', methods=['GET'])
+def get_card_employees():
+    """ Функция возвращает список сотрудников компании """
+
+    user_ip = request.remote_addr
+    LOGGER.event(f"Запрос от ip: {user_ip}", print_it=False)
+
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ''}
+
+    json_request = dict()
+
+    # Проверяем запрос на Json
+    if request.is_json:
+        json_request = request.json
+    else:
+        json_request['FINN'] = request.args.get("FINN")
+
+    if not json_request['FINN']:
+        LOGGER.error(f"Не удалось прочитать args/data из request")
+        json_replay["DESC"] = "Ошибка. Не удалось прочитать args/data из request."
+    else:
+        finn = json_request.get("FINN")
+
+        LOGGER.info(f"Получены данные: (FINN: {finn})", print_it=False)
+
+        con_db = CardHoldersDB()
+
+        # Запрос в БД FIREBIRD
+        db_fdb = con_db.get_from_fdb(finn)
+
+        json_replay["DESC"] = db_fdb["desc"]
+
+        if db_fdb["status"]:
+            json_replay["RESULT"] = "SUCCESS"
+
+            list_id = list()
+
+            # создаем список fid для получения списка сотрудников из базы лиц
+            for it in db_fdb['data']:
+                list_id.append(it["fid"])
+
+            face_db = con_db.get_with_face(list_id)
+
+            ret_list_id = list()
+
+            # Перезаписываем в новый лист данные пользователей с полем isphoto
+            for it in db_fdb["data"]:
+                if it["fid"] in str(face_db['data']):
+                    it['isphoto'] = 1
+                else:
+                    it['isphoto'] = 0
+
+                ret_list_id.append(it)
+
+            json_replay["DATA"] = ret_list_id
 
     return jsonify(json_replay)
