@@ -1,3 +1,4 @@
+# VigTech - WEB_SERVER
 <img src="web_rum_img.png" alt="Описание изображения" width="600">
 
 [![Build Status](https://img.shields.io/badge/python-3.9-green)](https://www.python.org/downloads/) ![Build Status](https://img.shields.io/badge/Flask-2.0.3-red) ![Build Status](https://img.shields.io/badge/PyMySQL-1.1.1-orange) ![Build Status](https://img.shields.io/badge/Firebird_DB-2.5.0-red)
@@ -7,7 +8,9 @@
 файл установки - Firebird-2.5.0.26074_1_x64.exe в папке "setup"
 
 ------------------------------------------------------
-!Вся документация находится в папке readme:
+## Важно!
++ Подробная документация находится в папке ./readme/
+------------------------------------------------------
 # Методы:
 ## Защита
 + DoAddIP - Добавить новый IP для доступа к API
